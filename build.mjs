@@ -2,9 +2,9 @@ import esbuild from 'esbuild'
 import { writeFileSync } from 'node:fs'
 
 const ID = 'dsh-vibe'
+const watch = process.argv.includes('--watch') || process.argv.includes('-w')
 
-// Client: bundle TSX -> CommonJS (react external), then wrap in the ModuleLoader factory.
-const client = await esbuild.build({
+const clientOptions = {
   entryPoints: ['src/client.tsx'],
   bundle: true,
   write: false,
@@ -17,23 +17,9 @@ const client = await esbuild.build({
   loader: { '.css': 'text' },
   minify: false,
   logLevel: 'info',
-})
-const clientCode = client.outputFiles[0].text
-const wrapped = `window.__ModuleLoader__.load({
-  id: ${JSON.stringify(ID)},
-  factory: function (require) {
-    var module = { exports: {} }
-    var exports = module.exports
-${clientCode}
-    return module.exports
-  },
-})
-`
-writeFileSync('lib/client.js', wrapped)
+}
 
-// Host: bundle TS -> ESM (harness-internal packages stay external, resolved
-// from the dsh install directory at runtime).
-await esbuild.build({
+const hostOptions = {
   entryPoints: ['src/index.ts'],
   bundle: true,
   format: 'esm',
@@ -42,6 +28,37 @@ await esbuild.build({
   outfile: 'lib/index.js',
   minify: false,
   logLevel: 'info',
-})
+}
 
-console.log('built lib/client.js and lib/index.js')
+function wrap(code) {
+  return `window.__ModuleLoader__.load({\n  id: ${JSON.stringify(ID)},\n  factory: function (require) {\n    var module = { exports: {} }\n    var exports = module.exports\n${code}\n    return module.exports\n  },\n})\n`
+}
+
+function writeClient(outputFiles) {
+  writeFileSync('lib/client.js', wrap(outputFiles[0].text))
+}
+
+if (watch) {
+  const clientCtx = await esbuild.context({
+    ...clientOptions,
+    plugins: [{
+      name: 'wrap-client',
+      setup(build) {
+        build.onEnd((result) => {
+          if (result.outputFiles) { writeClient(result.outputFiles); console.log('[watch] rebuilt lib/client.js') }
+        })
+      },
+    }],
+  })
+  await clientCtx.watch()
+
+  const hostCtx = await esbuild.context(hostOptions)
+  await hostCtx.watch()
+
+  console.log('[watch] watching src/ — client hot-reloads via dsh-client-hmr; host changes need a harness restart')
+} else {
+  const client = await esbuild.build(clientOptions)
+  writeClient(client.outputFiles)
+  await esbuild.build(hostOptions)
+  console.log('built lib/client.js and lib/index.js')
+}

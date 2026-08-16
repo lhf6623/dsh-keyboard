@@ -182,11 +182,17 @@ esbuild.build({ entryPoints: ['src/index.ts'], format: 'esm', external: ['@deeps
 
 ## 改动流程
 
+**本地开发（无需 git 提交）**：
 1. 改 src/。
-2. npm run build（node build.mjs）。
-3. node --check lib/index.js && node --check lib/client.js 校验语法。
-4. bump package.json 的 version。
-5. 提交（含 lib/ 产物）→ dsh plugin --profile web remove dsh-vibe → dsh plugin --profile web add github:lhf6623/dsh-keyboard。
+2. 跑 npm run watch（node build.mjs --watch），esbuild 自动重建 lib/。
+3. 客户端半边 lib/client.js 由 harness 内置的 dsh-client-hmr 热替换（stat-poll 检测 mtime 变化 → SSE 广播 rebuilt → 客户端 invalidate + 重新加载 bundle），浏览器即时生效。
+4. 只有改到宿主半边（src/index.ts，如 session/event、settings schema）时才需要重启 harness；宿主没有内置热替换。
+
+**发布（提交到 GitHub）**：
+1. npm run build。
+2. node --check lib/index.js && node --check lib/client.js 校验语法。
+3. bump package.json 的 version。
+4. 提交（含 lib/ 产物）→ dsh plugin --profile web remove dsh-vibe → dsh plugin --profile web add github:lhf6623/dsh-keyboard。
 
 ## 关键约定与坑
 

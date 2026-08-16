@@ -42,7 +42,7 @@ src/
 ├── index.ts        # 宿主：session/event + SSE
 ├── client.tsx      # 客户端入口：apply / inject / SSE / CSS 注入
 ├── styles.css      # 全部样式
-├── config.ts       # 设置存储（localStorage）+ 类型
+├── config.ts       # 设置存储（settings 服务）+ 类型
 ├── layout.ts       # 键盘布局
 ├── keyboard.tsx    # 键盘 / 鼠标组件
 ├── overlay.tsx     # 悬浮层组件
@@ -55,11 +55,14 @@ src/
 ```
 
 ```bash
-npm install          # 安装 devDependencies（esbuild）
-npm run build        # 构建 lib/index.js + lib/client.js
+npm install          # 安装 devDependencies（esbuild / react / types）
+npm run build        # 一次性构建 lib/index.js + lib/client.js
+npm run watch        # 监听 src/，改动自动重建（配合 harness 内置 HMR）
 ```
 
-修改流程：改 `src/` → `npm run build` → bump `package.json` 的 `version` → 提交（含 `lib/`）并重装（`remove` 后 `add`）。
+**本地开发**（无需 git 提交）：改 `src/` → 跑 `npm run watch`，esbuild 自动重建 `lib/`；客户端半边 `lib/client.js` 由 harness 内置的 `dsh-client-hmr` 热替换，浏览器即时生效。只有改到**宿主半边**（`lib/index.js`，如 session/event、settings schema）时才需要重启 harness。
+
+**发布**：`npm run build` → bump `package.json` 的 `version` → 提交（含 `lib/`）→ `dsh plugin remove dsh-vibe` + `dsh plugin add github:lhf6623/dsh-keyboard`。
 
 ## 版本记录
 

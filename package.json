@@ -15,7 +15,8 @@
     "cordis.patch.yml"
   ],
   "scripts": {
-    "build": "node build.mjs"
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch"
   },
   "devDependencies": {
     "@types/react": "^19.2.18",
@@ -40,5 +41,9 @@
     "fx",
     "feedback"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@deepseek-ai/dsh-settings": "^0.1.0-rc.6",
+    "@deepseek-ai/schemastery": "^3.18.1"
+  }
 }
