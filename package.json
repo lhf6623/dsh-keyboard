@@ -1,6 +1,6 @@
 {
   "name": "dsh-keyboard",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "description": "DeepSeek Harness 输入设备展示插件：在输入框上方展示 87 键键盘 + 鼠标，实时高亮按键与鼠标操作，打字时喷火焰粒子，支持深色模式与设置面板。",
   "type": "module",
   "main": "lib/index.js",

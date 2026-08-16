@@ -10,6 +10,7 @@ DeepSeek Harness (DSH) 输入设备可视化插件：在输入框上方展示一
 - **深色模式**：跟随 DSH 主题（`body[data-ds-dark-theme]`）自动切换浅色/深色键帽与鼠标配色。
 - **打字火焰效果**：在输入框文字光标处喷出火焰粒子（canvas 粒子系统）。新增、删除、粘贴，以及中文输入（拼音过程 + 上屏）都会触发；系统开启「减弱动态效果」时自动关闭。
 - **输入抖动**：每次输入给输入框卡片一个轻微的水平震动反馈，强度分「关 / 轻 / 中」，默认关；开启「减弱动态效果」时强制关闭。
+- **回答完成提示 + 整页抖动**：AI 回答完毕（宿主监听 `session/event` 的 `turn/end`，经 SSE 推送到浏览器）时播放一声短促「叮」提示音，并按「抖动」档位给整页一个轻微震动；提示音可独立开关。
 - **组合键不卡键**：窗口失焦或页面隐藏时自动清空所有按下状态，并用 `getModifierState` 校准修饰键，避免 Ctrl/Cmd/Alt/Shift 卡在按下状态。
 - **设置面板**：位于「设置 → 通用设置 → 外观」下方（一行「键盘与鼠标」），提供：
   - 显示：开关键盘 / 鼠标
@@ -17,6 +18,7 @@ DeepSeek Harness (DSH) 输入设备可视化插件：在输入框上方展示一
   - 抖动：关 / 轻 / 中
   - 透明度：10% – 100%
   - 缩放：60% – 150%
+  - 提示音：回答完成提示音开关
 
 ## 安装
 
@@ -29,7 +31,7 @@ dsh plugin --profile web add github:lhf6623/dsh-keyboard
 设置保存在浏览器 `localStorage`（键 `dsh-keyboard.config`），结构：
 
 ```json
-{ "enabled": true, "flame": true, "shake": "off", "opacity": 0.5, "scale": 1 }
+{ "enabled": true, "flame": true, "shake": "off", "sound": true, "opacity": 0.5, "scale": 1 }
 ```
 
 也可直接在设置面板中调整，实时生效。
@@ -41,6 +43,7 @@ dsh plugin --profile web add github:lhf6623/dsh-keyboard
 
 ## 版本记录
 
+- 0.1.27 新增回答完成提示音 + 整页抖动（session/event + SSE）
 - 0.1.26 新增输入抖动（关 / 轻 / 中）
 - 0.1.25 更新 package 描述
 - 0.1.24 键盘改为位置计算完成后才挂载，消除初始化左右滑动
