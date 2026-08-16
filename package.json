@@ -10,13 +10,35 @@
     "./cordis.patch.yml": "./cordis.patch.yml",
     "./package.json": "./package.json"
   },
-  "files": ["lib", "cordis.patch.yml"],
-  "scripts": { "build": "node build.mjs" },
-  "devDependencies": { "esbuild": "^0.28.1" },
-  "dsh": {
-    "bundle": { "patch": "./cordis.patch.yml" },
-    "client": { "platform": "web" }
+  "files": [
+    "lib",
+    "cordis.patch.yml"
+  ],
+  "scripts": {
+    "build": "node build.mjs"
   },
-  "keywords": ["dsh", "dsh-plugin", "deepseek-harness", "keyboard", "mouse", "vibe", "fx", "feedback"],
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "esbuild": "^0.28.1",
+    "react": "^19.2.8"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    }
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "keyboard",
+    "mouse",
+    "vibe",
+    "fx",
+    "feedback"
+  ],
   "license": "MIT"
 }
