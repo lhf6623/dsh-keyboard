@@ -1,0 +1,38 @@
+.dsh-kb-root { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); transform-origin: 50% 100%; z-index: 40; pointer-events: none; opacity: 0.5; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.dsh-kb-wrap { display: flex; align-items: stretch; gap: 3px; }
+.dsh-kb { display: flex; flex-direction: column; gap: 5px; }
+.dsh-kb-side { display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
+.dsh-kb-arrows { display: flex; flex-direction: column; gap: 5px; }
+.dsh-kb-row { display: flex; gap: 5px; }
+.dsh-kb-key { height: 30px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid rgba(0,0,0,0.2); background: rgba(255,255,255,0.25); color: rgba(0,0,0,0.45); font-size: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; box-shadow: 0 1px 0 rgba(0,0,0,0.08); transition: transform 50ms ease, box-shadow 50ms ease, background 120ms ease, color 120ms ease; }
+.dsh-kb-key.on { transform: translateY(2px); box-shadow: 0 0 0 rgba(0,0,0,0.5); background: rgba(88,150,255,0.18); color: rgba(0,0,0,0.6); border-color: rgba(0,0,0,0.3); }
+.dsh-mouse { position: relative; width: 58px; height: 90px; border-radius: 28px 28px 22px 22px; border: 1px solid rgba(0,0,0,0.2); background: rgba(255,255,255,0.25); box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+.dsh-mouse-btn { position: absolute; top: 0; width: 50%; height: 40px; border-bottom: 1px solid rgba(0,0,0,0.18); transition: background 80ms ease; }
+.dsh-mouse-btn.left { left: 0; border-radius: 28px 0 0 0; }
+.dsh-mouse-btn.right { right: 0; border-radius: 0 28px 0 0; }
+.dsh-mouse-btn.on { background: rgba(88,150,255,0.18); }
+.dsh-mouse-wheel { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 9px; height: 20px; border-radius: 5px; border: 1px solid rgba(0,0,0,0.2); background: rgba(150,150,150,0.55); transition: background 80ms ease, top 80ms ease; }
+.dsh-mouse-wheel.on { background: rgba(88,150,255,0.3); }
+.dsh-mouse-wheel.mid { top: 6px; }
+@media (max-width: 920px) { .dsh-kb-root { display: none; } }
+@media (prefers-reduced-motion: reduce) { .dsh-kb-root { transition: none; } }
+body[data-ds-dark-theme] .dsh-kb-key { border-color: rgba(255,255,255,0.14); background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.72); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
+body[data-ds-dark-theme] .dsh-kb-key.on { background: rgba(88,150,255,0.3); color: rgba(255,255,255,0.95); border-color: rgba(120,170,255,0.5); }
+body[data-ds-dark-theme] .dsh-mouse { border-color: rgba(255,255,255,0.14); background: rgba(255,255,255,0.07); box-shadow: 0 1px 4px rgba(0,0,0,0.45); }
+body[data-ds-dark-theme] .dsh-mouse-btn { border-bottom-color: rgba(255,255,255,0.12); }
+body[data-ds-dark-theme] .dsh-mouse-btn.on { background: rgba(88,150,255,0.3); }
+body[data-ds-dark-theme] .dsh-mouse-wheel { border-color: rgba(255,255,255,0.18); background: rgba(200,200,200,0.42); }
+body[data-ds-dark-theme] .dsh-mouse-wheel.on { background: rgba(88,150,255,0.42); }
+.dsh-kb-settings { display: flex; flex-direction: column; gap: 14px; padding: 16px 0; }
+.dsh-kb-group { display: flex; flex-direction: column; gap: 10px; }
+.dsh-kb-group-title { font-size: 12px; font-weight: 500; color: var(--dsw-alias-label-secondary); }
+.dsh-kb-settings-row { display: flex; align-items: center; gap: 12px; }
+.dsh-kb-settings-row label { font-size: 12px; color: var(--dsw-alias-label-secondary); min-width: 64px; white-space: nowrap; }
+.dsh-kb-settings-row input[type=range] { flex: 1; accent-color: var(--dsw-alias-brand-primary); }
+.dsh-kb-settings-row input[type=checkbox] { accent-color: var(--dsw-alias-brand-primary); width: 15px; height: 15px; }
+.dsh-kb-settings-val { font-size: 12px; color: var(--dsw-alias-label-tertiary); min-width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
+.dsh-kb-seg { display: inline-flex; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; overflow: hidden; }
+.dsh-kb-seg-btn { border: none; background: transparent; color: var(--dsw-alias-label-secondary); padding: 3px 14px; font-size: 12px; cursor: pointer; }
+.dsh-kb-seg-btn.on { background: var(--dsw-alias-interactive-bg-hover); color: var(--dsw-alias-label-primary); }
+.dsh-kb-seg-btn + .dsh-kb-seg-btn { border-left: 1px solid var(--dsw-alias-border-l2); }
+.dsh-kb-flame { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 45; pointer-events: none; }

@@ -1,0 +1,41 @@
+import css from './styles.css'
+import { Overlay } from './components/Overlay'
+import { VibeSection } from './components/Settings'
+import { playAnswerSound } from './audio'
+import { shakePage } from './shake'
+
+const STYLE_TAG = 'dsh-vibe/style.css'
+if (typeof document !== 'undefined' && document.querySelector('style[data-plugin-css="' + STYLE_TAG + '"]') === null) {
+  const tag = document.createElement('style')
+  tag.dataset.plugin = 'dsh-vibe'
+  tag.dataset.pluginCss = STYLE_TAG
+  tag.textContent = css
+  document.head.appendChild(tag)
+}
+
+export const inject = ['slots']
+
+export function apply(ctx: any) {
+  ctx.slots.inject('shell.overlay', () => ctx.slots.register(
+    { name: 'shell.overlay', id: 'dsh-vibe' },
+    Overlay,
+  ))
+  ctx.slots.inject('settings.section', () => ctx.slots.register(
+    { name: 'settings.section', id: 'vibe', order: 5, label: () => '氛围' },
+    VibeSection,
+  ))
+  if (typeof EventSource !== 'undefined') {
+    ctx.effect(() => {
+      const es = new EventSource('/api/vibe-events')
+      es.onmessage = (e) => {
+        let data: any = null
+        try { data = JSON.parse(e.data) } catch {}
+        if (data && data.type === 'answer-done') {
+          playAnswerSound()
+          shakePage()
+        }
+      }
+      return () => { es.close() }
+    })
+  }
+}
