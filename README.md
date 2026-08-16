@@ -25,13 +25,13 @@ dsh plugin --profile web add github:lhf6623/dsh-keyboard
 
 ## 配置
 
-设置保存在浏览器 `localStorage`（键 `dsh-vibe.config`；旧键 `dsh-keyboard.config` 会自动迁移），结构：
+设置通过 DSH 的 `settings` 服务持久化（宿主 `ctx.settings.register` 注册 schema、客户端 `ctx.settingsScope` 读写），结构：
 
 ```json
 { "enabled": true, "flame": true, "shake": "off", "sound": true, "opacity": 0.5, "scale": 1 }
 ```
 
-也可直接在设置面板中调整，实时生效。
+也可直接在「设置 → 氛围」中调整，实时生效并持久化。
 
 ## 开发
 
@@ -63,6 +63,7 @@ npm run build        # 构建 lib/index.js + lib/client.js
 
 ## 版本记录
 
+- 0.1.34 设置迁移到 DSH settings 服务（宿主 schema + 客户端 settingsScope）
 - 0.1.33 重构：TypeScript 源码拆分 + esbuild 构建，扁平化 src/ 目录
 - 0.1.32 TypeScript 源码 + esbuild 构建，提交 lib/ 产物
 - 0.1.28 更名为 dsh-vibe

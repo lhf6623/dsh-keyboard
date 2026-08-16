@@ -1,4 +1,5 @@
 import css from './styles.css'
+import { initConfig } from './config'
 import { Overlay } from './overlay'
 import { VibeSection } from './settings'
 import { playAnswerSound } from './audio'
@@ -13,9 +14,10 @@ if (typeof document !== 'undefined' && document.querySelector('style[data-plugin
   document.head.appendChild(tag)
 }
 
-export const inject = ['slots']
+export const inject = ['slots', 'settingsScope', 'connection', 'remote']
 
 export function apply(ctx: any) {
+  initConfig(ctx.settingsScope.bind({ namespace: 'dsh-vibe' }))
   ctx.slots.inject('shell.overlay', () => ctx.slots.register(
     { name: 'shell.overlay', id: 'dsh-vibe' },
     Overlay,

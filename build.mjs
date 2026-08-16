@@ -31,12 +31,14 @@ ${clientCode}
 `
 writeFileSync('lib/client.js', wrapped)
 
-// Host: bundle TS -> ESM.
+// Host: bundle TS -> ESM (harness-internal packages stay external, resolved
+// from the dsh install directory at runtime).
 await esbuild.build({
   entryPoints: ['src/index.ts'],
   bundle: true,
   format: 'esm',
   platform: 'neutral',
+  external: ['@deepseek-ai/schemastery', '@deepseek-ai/dsh-settings'],
   outfile: 'lib/index.js',
   minify: false,
   logLevel: 'info',
