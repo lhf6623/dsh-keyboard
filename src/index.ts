@@ -2,6 +2,8 @@ function sseData(frame: { type: string }): string {
   return 'data: ' + JSON.stringify(frame) + '\n\n'
 }
 
+export const name = 'dsh-vibe'
+
 export default {
   inject: ['webServer'],
   apply(ctx: any) {

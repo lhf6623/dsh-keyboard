@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { getConfig, setConfig, subscribeConfig, VibeConfig, ShakeLevel } from '../config'
+import { getConfig, setConfig, subscribeConfig, VibeConfig, ShakeLevel } from './config'
 
 const SHAKE_LABELS: Record<ShakeLevel, string> = { off: '关', light: '轻', medium: '中' }
 

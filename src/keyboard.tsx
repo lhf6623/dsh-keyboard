@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ROWS } from '../layout'
+import { ROWS } from './layout'
 
 export interface MouseState {
   left: boolean

@@ -1,6 +1,6 @@
 import css from './styles.css'
-import { Overlay } from './components/Overlay'
-import { VibeSection } from './components/Settings'
+import { Overlay } from './overlay'
+import { VibeSection } from './settings'
 import { playAnswerSound } from './audio'
 import { shakePage } from './shake'
 

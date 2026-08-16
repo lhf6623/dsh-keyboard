@@ -1,10 +1,10 @@
 import * as React from 'react'
-import { getConfig, subscribeConfig, VibeConfig } from '../config'
-import { computeCaretPosition } from '../caret'
-import { initFlame, spawnFlame, stopFlame } from '../flame'
-import { primeAudio } from '../audio'
-import { triggerShake, stopShake } from '../shake'
-import { KeyboardMain, ArrowView, MouseView, MouseState } from './Keyboard'
+import { getConfig, subscribeConfig, VibeConfig } from './config'
+import { computeCaretPosition } from './caret'
+import { initFlame, spawnFlame, stopFlame } from './flame'
+import { primeAudio } from './audio'
+import { triggerShake, stopShake } from './shake'
+import { KeyboardMain, ArrowView, MouseView, MouseState } from './keyboard'
 
 export function Overlay() {
   const [pressed, setPressed] = React.useState<Record<string, boolean>>({})

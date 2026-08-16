@@ -35,11 +35,36 @@ dsh plugin --profile web add github:lhf6623/dsh-keyboard
 
 ## 开发
 
-- 无构建链：客户端 `lib/client.js` 是手写 ES5 + `React.createElement`，由 DSH 运行时通过 `window.__ModuleLoader__.load` 直接加载；宿主半边 `lib/index.js` 为极简 ESM。
-- 修改后先 `node --check lib/client.js` 校验语法，再 bump `package.json` 的 `version`，提交并重装插件（`remove` 后 `add` 以拉取最新版本）。
+源码在 `src/`（TypeScript + JSX），用 esbuild 构建到 `lib/`；构建产物 `lib/` 随仓库提交，因此 `dsh plugin add github:...` 安装时**无需运行构建脚本、也无需 allowBuilds 授权**。
+
+```text
+src/
+├── index.ts        # 宿主：session/event + SSE
+├── client.tsx      # 客户端入口：apply / inject / SSE / CSS 注入
+├── styles.css      # 全部样式
+├── config.ts       # 设置存储（localStorage）+ 类型
+├── layout.ts       # 键盘布局
+├── keyboard.tsx    # 键盘 / 鼠标组件
+├── overlay.tsx     # 悬浮层组件
+├── settings.tsx    # 设置面板组件
+├── caret.ts        # 光标位置测量
+├── motion.ts       # reducedMotion()
+├── flame.ts        # 火焰粒子
+├── shake.ts        # 输入抖动 + 整页抖动
+└── audio.ts        # 回答提示音
+```
+
+```bash
+npm install          # 安装 devDependencies（esbuild）
+npm run build        # 构建 lib/index.js + lib/client.js
+```
+
+修改流程：改 `src/` → `npm run build` → bump `package.json` 的 `version` → 提交（含 `lib/`）并重装（`remove` 后 `add`）。
 
 ## 版本记录
 
+- 0.1.33 重构：TypeScript 源码拆分 + esbuild 构建，扁平化 src/ 目录
+- 0.1.32 TypeScript 源码 + esbuild 构建，提交 lib/ 产物
 - 0.1.28 更名为 dsh-vibe
 - 0.1.27 新增回答完成提示音 + 整页抖动（session/event + SSE）
 - 0.1.26 新增输入抖动（关 / 轻 / 中）
