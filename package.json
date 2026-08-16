@@ -1,6 +1,6 @@
 {
   "name": "dsh-vibe",
-  "version": "0.1.28",
+  "version": "0.1.29",
   "description": "DeepSeek Harness 输入氛围插件：87 键键盘 + 鼠标可视化，打字火焰、输入抖动、回答完成提示音与整页抖动，支持深色模式与设置面板。",
   "type": "module",
   "main": "lib/index.js",
