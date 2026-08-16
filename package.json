@@ -1,7 +1,7 @@
 {
-  "name": "dsh-keyboard",
-  "version": "0.1.27",
-  "description": "DeepSeek Harness 输入设备展示插件：在输入框上方展示 87 键键盘 + 鼠标，实时高亮按键与鼠标操作，打字时喷火焰粒子，支持深色模式与设置面板。",
+  "name": "dsh-vibe",
+  "version": "0.1.28",
+  "description": "DeepSeek Harness 输入氛围插件：87 键键盘 + 鼠标可视化，打字火焰、输入抖动、回答完成提示音与整页抖动，支持深色模式与设置面板。",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -15,6 +15,6 @@
     "bundle": { "patch": "./cordis.patch.yml" },
     "client": { "platform": "web" }
   },
-  "keywords": ["dsh", "dsh-plugin", "deepseek-harness", "keyboard", "mouse"],
+  "keywords": ["dsh", "dsh-plugin", "deepseek-harness", "keyboard", "mouse", "vibe", "fx", "feedback"],
   "license": "MIT"
 }

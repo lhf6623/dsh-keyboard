@@ -1,6 +1,6 @@
-# dsh-keyboard
+# dsh-vibe
 
-DeepSeek Harness (DSH) 输入设备可视化插件：在输入框上方展示一块 87 键 TKL 键盘 + 鼠标，实时高亮你按下的键、点击的鼠标键与滚轮，并在输入框打字时喷出火焰粒子效果。
+DeepSeek Harness (DSH) 输入氛围插件：在输入框上方展示一块 87 键 TKL 键盘 + 鼠标并实时高亮按键与鼠标操作，打字时喷火焰粒子、输入框轻震，AI 回答完成时播放提示音并整页轻震。
 
 ## 功能
 
@@ -28,7 +28,7 @@ dsh plugin --profile web add github:lhf6623/dsh-keyboard
 
 ## 配置
 
-设置保存在浏览器 `localStorage`（键 `dsh-keyboard.config`），结构：
+设置保存在浏览器 `localStorage`（键 `dsh-vibe.config`；旧键 `dsh-keyboard.config` 会自动迁移），结构：
 
 ```json
 { "enabled": true, "flame": true, "shake": "off", "sound": true, "opacity": 0.5, "scale": 1 }
@@ -43,6 +43,7 @@ dsh plugin --profile web add github:lhf6623/dsh-keyboard
 
 ## 版本记录
 
+- 0.1.28 更名为 dsh-vibe
 - 0.1.27 新增回答完成提示音 + 整页抖动（session/event + SSE）
 - 0.1.26 新增输入抖动（关 / 轻 / 中）
 - 0.1.25 更新 package 描述

@@ -1,4 +1,4 @@
-# dsh-keyboard bundle patch layer — inserts the host row into the Loader tree.
+# dsh-vibe bundle patch layer — inserts the host row into the Loader tree.
 - insert:
-    - id: keyboard
-      name: 'dsh-keyboard'
+    - id: vibe
+      name: 'dsh-vibe'
