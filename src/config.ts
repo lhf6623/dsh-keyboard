@@ -1,4 +1,4 @@
-export type ShakeLevel = 'off' | 'light' | 'medium'
+export type ShakeLevel = 'off' | 'light' | 'medium' | 'strong'
 
 export interface VibeConfig {
   enabled: boolean
@@ -9,6 +9,12 @@ export interface VibeConfig {
   scale: number
 }
 
+// 纯客户端 UI 偏好，持久化到浏览器 localStorage。
+// 注意：不能走 DSH settings 服务——它的配置客户端白名单（dsh-host-apiproxy 的
+// WEB_SETTINGS_NAMESPACES/PRODUCT_SETTINGS_NAMESPACES）不含第三方插件 namespace，
+// 浏览器写入会得到 settings-not-exposed 被拒（插件自声明机制是 deferred work）。
+const KEY = 'dsh-vibe.config'
+const LEGACY_KEY = 'dsh-keyboard.config'
 const DEFAULTS: VibeConfig = { enabled: true, flame: true, shake: 'off', sound: true, opacity: 0.5, scale: 1 }
 
 function clamp(v: unknown, min: number, max: number, def: number): number {
@@ -18,7 +24,7 @@ function clamp(v: unknown, min: number, max: number, def: number): number {
 
 export function normalizeConfig(c: unknown): VibeConfig {
   const o = (c ?? {}) as any
-  const shake: ShakeLevel = o.shake === 'light' || o.shake === 'medium' ? o.shake : 'off'
+  const shake: ShakeLevel = o.shake === 'light' || o.shake === 'medium' || o.shake === 'strong' ? o.shake : 'off'
   return {
     enabled: o.enabled !== false,
     flame: o.flame !== false,
@@ -29,21 +35,23 @@ export function normalizeConfig(c: unknown): VibeConfig {
   }
 }
 
-let config: VibeConfig = { ...DEFAULTS }
-let scope: any = null
-const listeners = new Set<(c: VibeConfig) => void>()
-
-// Wire the store to a settingsScope controller (bound by apply()).
-export function initConfig(s: any): void {
-  scope = s
-  s.subscribe(() => {
-    const snap = s.getSnapshot()
-    if (snap.status === 'ready' && snap.value && typeof snap.value === 'object') {
-      config = normalizeConfig(snap.value)
-      for (const fn of listeners) fn(config)
+function loadConfig(): VibeConfig {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      let raw = window.localStorage.getItem(KEY)
+      if (!raw) raw = window.localStorage.getItem(LEGACY_KEY)
+      if (raw) {
+        const cfg = normalizeConfig(JSON.parse(raw))
+        try { window.localStorage.setItem(KEY, JSON.stringify(cfg)) } catch {}
+        return cfg
+      }
     }
-  })
+  } catch {}
+  return { ...DEFAULTS }
 }
+
+let config: VibeConfig = loadConfig()
+const listeners = new Set<(c: VibeConfig) => void>()
 
 export function getConfig(): VibeConfig {
   return config
@@ -51,12 +59,12 @@ export function getConfig(): VibeConfig {
 
 export function setConfig(patch: Partial<VibeConfig>): void {
   config = normalizeConfig({ ...config, ...patch })
-  for (const fn of listeners) fn(config)
-  if (scope) {
-    for (const key of Object.keys(patch) as (keyof VibeConfig)[]) {
-      try { scope.set(key, (patch as any)[key]) } catch {}
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(KEY, JSON.stringify(config))
     }
-  }
+  } catch {}
+  for (const fn of listeners) fn(config)
 }
 
 export function subscribeConfig(fn: (c: VibeConfig) => void): () => void {

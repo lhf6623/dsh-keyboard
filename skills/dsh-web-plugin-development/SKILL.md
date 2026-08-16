@@ -57,8 +57,7 @@ description: 开发或重构 DeepSeek Harness 的 Web bundle 插件（宿主 lib
 └── src/                # TypeScript/JSX 源码（改这里）
     ├── index.ts        # 宿主
     ├── client.tsx      # 客户端入口
-    ├── styles.css      # 全部样式（以 text loader 导入）
-    └── ...             # 按职责拆分的模块/组件
+    └── ...             # 按职责拆分的模块/组件（样式全部为 vibe-* 原子类）
 ~~~
 
 ## 宿主半边（lib/index.js ← src/index.ts）
@@ -142,7 +141,9 @@ export function apply(ctx: any) {
 
 ## 设置服务（持久化用户偏好）
 
-用户可在 UI 里改的偏好（主题、语言、本插件的 opacity / scale 等）应走 settings 服务，不要用 localStorage：
+用户可在 UI 里改的偏好（主题、语言等）官方推荐走 settings 服务。但**第三方 bundle 插件的 namespace 默认不在 `dsh-host-apiproxy` 的配置客户端白名单里**（`WEB_SETTINGS_NAMESPACES` / `PRODUCT_SETTINGS_NAMESPACES` 是硬编码列表），浏览器端 `settingsScope.set()` 会得到 `settings-not-exposed` 被拒，而「插件通过 `settings.register()` 自声明暴露」在 DSH 里还是 deferred work。所以第三方插件的**纯客户端 UI 偏好**（如 dsh-vibe 的透明度/缩放/抖动）实际用 localStorage 持久化（见 `src/config.ts`）；只有白名单内的官方 namespace（ui-theme、agent-loop、shell、locale、permission 等）才走 settings 服务：
+
+> 以下 settings 服务写法仅对白名单 namespace 生效：
 
 1. 宿主注册 schema（Schemastery，默认值写在 schema 里）：
 

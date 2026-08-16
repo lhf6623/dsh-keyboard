@@ -1,23 +1,11 @@
-import css from './styles.css'
-import { initConfig } from './config'
 import { Overlay } from './overlay'
 import { VibeSection } from './settings'
 import { playAnswerSound } from './audio'
 import { shakePage } from './shake'
 
-const STYLE_TAG = 'dsh-vibe/style.css'
-if (typeof document !== 'undefined' && document.querySelector('style[data-plugin-css="' + STYLE_TAG + '"]') === null) {
-  const tag = document.createElement('style')
-  tag.dataset.plugin = 'dsh-vibe'
-  tag.dataset.pluginCss = STYLE_TAG
-  tag.textContent = css
-  document.head.appendChild(tag)
-}
-
-export const inject = ['slots', 'settingsScope', 'connection', 'remote']
+export const inject = ['slots', 'connection', 'remote']
 
 export function apply(ctx: any) {
-  initConfig(ctx.settingsScope.bind({ namespace: 'dsh-vibe' }))
   ctx.slots.inject('shell.overlay', () => ctx.slots.register(
     { name: 'shell.overlay', id: 'dsh-vibe' },
     Overlay,

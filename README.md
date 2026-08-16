@@ -25,7 +25,7 @@ dsh plugin --profile web add github:lhf6623/dsh-keyboard
 
 ## 配置
 
-设置通过 DSH 的 `settings` 服务持久化（宿主 `ctx.settings.register` 注册 schema、客户端 `ctx.settingsScope` 读写），结构：
+设置持久化到浏览器 `localStorage`（键 `dsh-vibe.config`，兼容旧键 `dsh-keyboard.config`）。这些是纯客户端 UI 偏好；不走 DSH `settings` 服务——它的配置客户端白名单不含第三方插件 namespace，浏览器写入会被 `settings-not-exposed` 拒绝（插件自声明机制在 DSH 里还是 deferred work）。结构：
 
 ```json
 { "enabled": true, "flame": true, "shake": "off", "sound": true, "opacity": 0.5, "scale": 1 }
@@ -35,14 +35,13 @@ dsh plugin --profile web add github:lhf6623/dsh-keyboard
 
 ## 开发
 
-源码在 `src/`（TypeScript + JSX），用 esbuild 构建到 `lib/`；构建产物 `lib/` 随仓库提交，因此 `dsh plugin add github:...` 安装时**无需运行构建脚本、也无需 allowBuilds 授权**。
+源码在 `src/`（TypeScript + JSX），用 **Vite**（客户端）+ **UnoCSS**（原子 CSS，`vibe-` 前缀）+ esbuild（宿主）构建到 `lib/`；构建产物 `lib/` 随仓库提交，因此 `dsh plugin add github:...` 安装时**无需运行构建脚本、也无需 allowBuilds 授权**。
 
 ```text
 src/
 ├── index.ts        # 宿主：session/event + SSE
 ├── client.tsx      # 客户端入口：apply / inject / SSE / CSS 注入
-├── styles.css      # 全部样式
-├── config.ts       # 设置存储（settings 服务）+ 类型
+├── config.ts       # 设置存储（localStorage）+ 类型
 ├── layout.ts       # 键盘布局
 ├── keyboard.tsx    # 键盘 / 鼠标组件
 ├── overlay.tsx     # 悬浮层组件
@@ -55,17 +54,20 @@ src/
 ```
 
 ```bash
-npm install          # 安装 devDependencies（esbuild / react / types）
+npm install          # 安装 devDependencies（vite / unocss / esbuild / react / types）
 npm run build        # 一次性构建 lib/index.js + lib/client.js
 npm run watch        # 监听 src/，改动自动重建（配合 harness 内置 HMR）
 ```
 
-**本地开发**（无需 git 提交）：改 `src/` → 跑 `npm run watch`，esbuild 自动重建 `lib/`；客户端半边 `lib/client.js` 由 harness 内置的 `dsh-client-hmr` 热替换，浏览器即时生效。只有改到**宿主半边**（`lib/index.js`，如 session/event、settings schema）时才需要重启 harness。
+**UnoCSS**：全部样式都是原子类（utility），不再有手写 CSS 文件。原子类统一带 `vibe-` 前缀避免与 DSH 类名冲突；键盘/鼠标/火焰等组件样式同样拆成原子类写在组件 `className` 里（如 `vibe-h-[30px]`、`vibe-bg-[rgba(88,150,255,0.18)]`），深色模式用自定义变体 `dsh-dark:`（映射到 `body[data-ds-dark-theme]`），窄屏隐藏用 `[@media(max-width:920px)]:` 变体，减弱动效用 `motion-reduce:` 变体。构建时由 `build.mjs` 用 `loadConfig` 加载 `uno.config.ts` 并扫描 `src/` 生成全部 CSS。
+
+**本地开发**（无需 git 提交）：改 `src/` → 跑 `npm run watch`，自动重建 `lib/`；客户端半边 `lib/client.js` 由 harness 内置的 `dsh-client-hmr` 热替换，浏览器即时生效。只有改到**宿主半边**（`lib/index.js`，如 session/event、SSE 路由）时才需要重启 harness。
 
 **发布**：`npm run build` → bump `package.json` 的 `version` → 提交（含 `lib/`）→ `dsh plugin remove dsh-vibe` + `dsh plugin add github:lhf6623/dsh-keyboard`。
 
 ## 版本记录
 
+- 0.1.35 全部样式改用 UnoCSS 原子类（删除 styles.css、新增 dsh-dark 深色变体、键盘/鼠标/分段按钮原子化）；设置持久化回退浏览器 localStorage（DSH settings 服务的配置客户端白名单不含第三方 namespace，写入被 settings-not-exposed 拒绝）
 - 0.1.34 设置迁移到 DSH settings 服务（宿主 schema + 客户端 settingsScope）
 - 0.1.33 重构：TypeScript 源码拆分 + esbuild 构建，扁平化 src/ 目录
 - 0.1.32 TypeScript 源码 + esbuild 构建，提交 lib/ 产物

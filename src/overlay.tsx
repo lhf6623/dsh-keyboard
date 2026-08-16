@@ -138,8 +138,8 @@ export function Overlay() {
       const frame = overlay ? overlay.parentElement : null
       if (frame) {
         const tpl = frame.style.gridTemplateColumns || getComputedStyle(frame).gridTemplateColumns
-        const m1 = tpl.match(/^s*([d.]+)px/)
-        const m2 = tpl.match(/([d.]+)pxs*$/)
+        const m1 = tpl.match(/^\s*([\d.]+)px/)
+        const m2 = tpl.match(/([\d.]+)px\s*$/)
         const sidebarW = m1 ? parseFloat(m1[1]) : 0
         const detailsW = m2 ? parseFloat(m2[1]) : 0
         setLeft(Math.round(sidebarW + (window.innerWidth - sidebarW - detailsW) / 2))
@@ -179,10 +179,10 @@ export function Overlay() {
   rootStyle.transform = 'translateX(-50%) scale(' + cfg.scale + ')'
 
   const keyboard = left !== null ? (
-    <div className="dsh-kb-root" style={rootStyle}>
-      <div className="dsh-kb-wrap">
+    <div className="vibe-fixed vibe-z-40 vibe-pointer-events-none vibe-origin-[50%_100%] vibe-transition-[left] vibe-duration-300 [@media(max-width:920px)]:vibe-hidden motion-reduce:vibe-transition-none" style={rootStyle}>
+      <div className="vibe-flex vibe-items-stretch vibe-gap-[3px]">
         <KeyboardMain pressed={pressed} />
-        <div className="dsh-kb-side">
+        <div className="vibe-flex vibe-flex-col vibe-justify-between vibe-items-center">
           <MouseView mouse={mouse} />
           <ArrowView pressed={pressed} />
         </div>
@@ -193,7 +193,7 @@ export function Overlay() {
   return (
     <React.Fragment>
       {keyboard}
-      <canvas className="dsh-kb-flame" ref={flameRef} style={{ pointerEvents: 'none' }} />
+      <canvas className="vibe-fixed vibe-top-0 vibe-left-0 vibe-w-full vibe-h-full vibe-z-45 vibe-pointer-events-none" ref={flameRef} />
     </React.Fragment>
   )
 }

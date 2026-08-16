@@ -1,20 +1,4 @@
-import z from '@deepseek-ai/schemastery'
-import { settingsNamespace } from '@deepseek-ai/dsh-settings'
-
 export const name = 'dsh-vibe'
-
-const NS = settingsNamespace('dsh-vibe')
-
-// Durable user preferences, resolved via the DSH settings service
-// (schema defaults -> user document section).
-const SettingsSchema = z.object({
-  enabled: z.boolean().default(true),
-  flame: z.boolean().default(true),
-  shake: z.union(['off', 'light', 'medium']).default('off'),
-  sound: z.boolean().default(true),
-  opacity: z.number().min(0.1).max(1).default(0.5),
-  scale: z.number().min(0.6).max(1.5).default(1),
-})
 
 function sseData(frame: { type: string }): string {
   return 'data: ' + JSON.stringify(frame) + '\n\n'
@@ -23,10 +7,6 @@ function sseData(frame: { type: string }): string {
 export default {
   inject: ['webServer'],
   apply(ctx: any) {
-    ctx.inject(['settings'], (settingsCtx: any) => {
-      settingsCtx.settings.register(NS, SettingsSchema)
-    })
-
     const connections = new Set<any>()
 
     function broadcast(type: string) {

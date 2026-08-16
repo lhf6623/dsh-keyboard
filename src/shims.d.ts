@@ -5,12 +5,3 @@ declare module '*.css' {
   const content: string
   export default content
 }
-
-declare module '@deepseek-ai/schemastery' {
-  const z: any
-  export default z
-}
-
-declare module '@deepseek-ai/dsh-settings' {
-  export function settingsNamespace(value: string): string
-}
