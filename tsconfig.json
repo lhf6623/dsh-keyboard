@@ -15,9 +15,14 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "noEmit": true
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": ["node"]
   },
   "include": [
-    "src"
+    "src",
+    "vite.shared.ts",
+    "vite.host.config.ts",
+    "vite.client.config.ts"
   ]
 }

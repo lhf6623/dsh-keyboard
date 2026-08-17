@@ -12,10 +12,7 @@ DeepSeek Harness (DSH) 输入氛围插件：在输入框上方展示一块 87 �
 - **输入抖动**：每次输入给输入框卡片一个轻微的水平震动反馈，强度分「关 / 轻 / 中」，默认关；开启「减弱动态效果」时强制关闭。
 - **回答完成提示 + 整页抖动**：AI 回答完毕（宿主监听 `session/event` 的 `turn/end`，经 SSE 推送到浏览器）时播放一声短促「叮」提示音，并按「抖动」档位给整页一个轻微震动；提示音可独立开关。
 - **组合键不卡键**：窗口失焦或页面隐藏时自动清空所有按下状态，并用 `getModifierState` 校准修饰键，避免 Ctrl/Cmd/Alt/Shift 卡在按下状态。
-- **设置面板**：独立设置分区「氛围」（设置面板里一个独立的「氛围」标签页），分三组：
-  - 键盘外观：显示键盘 / 键盘透明度（10%–100%）/ 键盘缩放（60%–150%）
-  - 打字反馈：打字火焰 / 输入抖动（关 / 轻 / 中）
-  - 回答反馈：回答提示音
+- **配置式**：宿主导出 `Config` schema（见「配置」），部署者在 `cordis.yml` 的 `config` 块配置；浏览器只读解析值（白名单暴露时走系统 settings，未暴露时读默认值）。
 
 ## 安装
 
@@ -25,13 +22,13 @@ dsh plugin --profile web add github:lhf6623/dsh-keyboard
 
 ## 配置
 
-设置持久化到浏览器 `localStorage`（键 `dsh-vibe.config`，兼容旧键 `dsh-keyboard.config`）。这些是纯客户端 UI 偏好；不走 DSH `settings` 服务——它的配置客户端白名单不含第三方插件 namespace，浏览器写入会被 `settings-not-exposed` 拒绝（插件自声明机制在 DSH 里还是 deferred work）。结构：
+配置式（见 cordis-tutorial/05-config）：宿主导出 `Config` 接口与同名 Schemastery schema（`src/index.ts`），默认值写在 schema 里；部署者在 `cordis.yml` 的 entry `config` 块覆盖（如 profile 的 `cordis.patch.yml`）。结构（schema 默认值）：
 
 ```json
 { "enabled": true, "flame": true, "shake": "off", "sound": true, "opacity": 0.5, "scale": 1 }
 ```
 
-也可直接在「设置 → 氛围」中调整，实时生效并持久化。
+宿主按官方路径注册设置：`installSettingsSection(ctx, ns, Config, config, …)`（cookbook/adding-a-settings-card），浏览器经 `settingsScope.bind` 读取，并在设置面板提供独立「氛围」标签（`settings.section`，显示不依赖白名单）供用户修改。**持久化**：设置存浏览器 `localStorage`（键 `dsh-vibe.config`），发布后依然有效；DSH 的浏览器设置白名单（api-proxy 的 `WEB_SETTINGS_NAMESPACES`）硬编码不含第三方 namespace，白名单暴露时（scope `ready`）优先读系统 settings 并回写 localStorage，未暴露时 localStorage 是唯一存储。宿主侧的 cordis.yml 配置（`Config` schema）始终生效，作为 schema 默认之上的组装层。
 
 ## 开发
 
@@ -39,25 +36,33 @@ dsh plugin --profile web add github:lhf6623/dsh-keyboard
 
 ```text
 src/
-├── index.ts        # 宿主：session/event + SSE
-├── client.tsx      # 客户端入口：apply / inject / SSE / CSS 注入
-├── config.ts       # 设置存储（localStorage）+ 类型
-├── layout.ts       # 键盘布局
-├── keyboard.tsx    # 键盘 / 鼠标组件
-├── overlay.tsx     # 悬浮层组件
-├── settings.tsx    # 设置面板组件
-├── caret.ts        # 光标位置测量
-├── motion.ts       # reducedMotion()
-├── flame.ts        # 火焰粒子
-├── shake.ts        # 输入抖动 + 整页抖动
-└── audio.ts        # 回答提示音
+├── index.ts            # 宿主：Config schema + session/event + SSE
+├── client.tsx          # 客户端入口：apply / inject / SSE / CSS 注入
+├── settings/           # 设置（配置式 + 设置面板）
+│   ├── config.ts       # 配置类型 / settingsScope 绑定 / localStorage 持久化
+│   └── settings.tsx    # 「氛围」设置面板（settings.section）
+├── ui/                 # 视觉与交互
+│   ├── overlay.tsx     # 悬浮层主组件（键盘/鼠标渲染、事件、位置测量）
+│   ├── keyboard.tsx    # 键盘 / 鼠标 UI 组件
+│   ├── layout.ts       # 键盘布局数据
+│   └── caret.ts        # 光标位置测量
+├── fx/                 # 特效
+│   ├── flame.ts        # 火焰粒子
+│   ├── shake.ts        # 输入抖动 + 整页抖动
+│   ├── audio.ts        # 回答提示音
+│   └── motion.ts       # reducedMotion()
+└── shims.d.ts          # 类型占位
 ```
 
 ```bash
-npm install          # 安装 devDependencies（vite / unocss / esbuild / react / types）
-npm run build        # 一次性构建 lib/index.js + lib/client.js
-npm run watch        # 监听 src/，改动自动重建（配合 harness 内置 HMR）
+npm install          # 安装 devDependencies（vite / unocss / react / types）
+npm run build        # 构建 lib/index.js（宿主）+ lib/client.js（客户端）
+npm run build:host   # 只构建宿主（vite.host.config.ts）
+npm run build:client # 只构建客户端（vite.client.config.ts）
+npm run watch        # 监听 src/ 自动重建客户端（配合 harness 内置 HMR）
 ```
+
+构建全走 **Vite**：`vite.host.config.ts`（宿主 ESM lib mode，harness 内部包 external）+ `vite.client.config.ts`（客户端 CJS lib mode）。UnoCSS 与 ModuleLoader 包装作为 Vite 插件（`vite.shared.ts`）：扫描 src/ 提取 `vibe-*` 原子类生成 CSS 内联进客户端，浏览器运行时注入 `<style>`。
 
 **UnoCSS**：全部样式都是原子类（utility），不再有手写 CSS 文件。原子类统一带 `vibe-` 前缀避免与 DSH 类名冲突；键盘/鼠标/火焰等组件样式同样拆成原子类写在组件 `className` 里（如 `vibe-h-[30px]`、`vibe-bg-[rgba(88,150,255,0.18)]`），深色模式用自定义变体 `dsh-dark:`（映射到 `body[data-ds-dark-theme]`），窄屏隐藏用 `[@media(max-width:920px)]:` 变体，减弱动效用 `motion-reduce:` 变体。构建时由 `build.mjs` 用 `loadConfig` 加载 `uno.config.ts` 并扫描 `src/` 生成全部 CSS。
 
@@ -67,6 +72,11 @@ npm run watch        # 监听 src/，改动自动重建（配合 harness 内置 
 
 ## 版本记录
 
+- 未发布（自 0.1.35 以来，待发布时统一 bump）：
+  - 配置式：宿主导出 `Config` schema（cordis-tutorial/05-config），cordis.yml entry `config` 块配置，`apply(ctx, config)` 接收；按官方 cookbook/adding-a-settings-card 用 `installSettingsSection` 注册 settings namespace（base = 组合配置）
+  - 设置面板：独立「氛围」标签（`settings.section`，显示不依赖白名单），6+1 项系统样式控件（含新增「回答后整页抖动」`pageShake`）
+  - 持久化：localStorage（键 `dsh-vibe.config`）；白名单暴露时优先读系统 settings 并回写
+  - 修复：键盘/overlay 位置监听增强（滚动/内容增长/布局重排跟随输入框）
 - 0.1.35 全部样式改用 UnoCSS 原子类（删除 styles.css、新增 dsh-dark 深色变体、键盘/鼠标/分段按钮原子化）；设置持久化回退浏览器 localStorage（DSH settings 服务的配置客户端白名单不含第三方 namespace，写入被 settings-not-exposed 拒绝）
 - 0.1.34 设置迁移到 DSH settings 服务（宿主 schema + 客户端 settingsScope）
 - 0.1.33 重构：TypeScript 源码拆分 + esbuild 构建，扁平化 src/ 目录

@@ -1,5 +1,5 @@
 import { reducedMotion } from './motion'
-import { getConfig } from './config'
+import { getConfig } from '../settings/config'
 
 let shakeAnim: Animation | null = null
 let answerShakeAnim: Animation | null = null
@@ -16,8 +16,10 @@ function keyframes(amp: number): Keyframe[] {
 }
 
 export function triggerShake(card: Element | null): void {
-  const level = getConfig().shake
-  if (level === 'off' || reducedMotion()) return
+  const cfg = getConfig()
+  // 打字反馈组总开关：关闭（feedback=false）时输入抖动也停
+  if (cfg.feedback === false || cfg.flame === false || cfg.shake === 'off' || reducedMotion()) return
+  const level = cfg.shake
   if (!card || typeof (card as any).animate !== 'function') return
   const amp = level === 'strong' ? 3 : level === 'medium' ? 2 : 1
   const dur = level === 'strong' ? 220 : level === 'medium' ? 180 : 120
@@ -26,8 +28,10 @@ export function triggerShake(card: Element | null): void {
 }
 
 export function shakePage(): void {
-  const level = getConfig().shake
-  if (level === 'off' || reducedMotion()) return
+  const cfg = getConfig()
+  // 回答反馈组总开关 + 独立开关 + 独立强度档位
+  if (cfg.response === false || cfg.pageShake === false || cfg.pageShakeLevel === 'off' || reducedMotion()) return
+  const level = cfg.pageShakeLevel
   const target = document.body
   if (!target || typeof (target as any).animate !== 'function') return
   const amp = level === 'strong' ? 4 : level === 'medium' ? 3 : 2

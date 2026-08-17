@@ -15,15 +15,20 @@
     "cordis.patch.yml"
   ],
   "scripts": {
-    "build": "node build.mjs",
-    "watch": "node build.mjs --watch"
+    "build": "vite build --config vite.host.config.ts && vite build --config vite.client.config.ts",
+    "build:host": "vite build --config vite.host.config.ts",
+    "build:client": "vite build --config vite.client.config.ts",
+    "watch": "vite build --watch --config vite.client.config.ts"
   },
   "devDependencies": {
+    "@deepseek-ai/dsh-settings": "^0.0.1-rc.1",
+    "@deepseek-ai/schemastery": "^3.18.1",
+    "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@unocss/config": "^66.7.5",
     "@unocss/vite": "^66.7.5",
-    "esbuild": "^0.28.1",
     "react": "^19.2.8",
+    "typescript": "^7.0.2",
     "unocss": "^66.7.5",
     "vite": "^8.2.1"
   },

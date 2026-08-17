@@ -1,4 +1,22 @@
 # dsh-vibe bundle patch layer — inserts the host row into the Loader tree.
+# 部署者可在 profile 的 cordis.patch.yml 里覆盖 config（配置式写法，见 cordis-tutorial/05-config）：
+#   - insert:
+#       - id: vibe
+#         name: 'dsh-vibe'
+#         config:
+#           enabled: true
+#           flame: true
+#           shake: light
+#           sound: true
+#           opacity: 0.6
+#           scale: 1.1
 - insert:
     - id: vibe
       name: 'dsh-vibe'
+      config:
+        enabled: true
+        flame: true
+        shake: off
+        sound: true
+        opacity: 0.5
+        scale: 1

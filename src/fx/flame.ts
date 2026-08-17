@@ -1,5 +1,5 @@
 import { reducedMotion } from './motion'
-import { getConfig } from './config'
+import { getConfig } from '../settings/config'
 
 interface Particle {
   x: number
@@ -22,7 +22,7 @@ export function initFlame(c: HTMLCanvasElement | null): void {
 }
 
 export function spawnFlame(x: number, y: number): void {
-  if (reducedMotion() || getConfig().flame === false) return
+  if (reducedMotion() || getConfig().feedback === false || getConfig().flame === false) return
   if (!ctx) return
   const n = 16
   for (let i = 0; i < n; i++) {

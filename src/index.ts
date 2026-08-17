@@ -1,4 +1,49 @@
+import z from '@deepseek-ai/schemastery'
+import { installSettingsSection, settingsNamespace } from '@deepseek-ai/dsh-settings'
+
 export const name = 'dsh-vibe'
+
+/** Settings namespace owned by dsh-vibe（浏览器侧经 settingsScope 读写）。 */
+export const VIBE_SETTINGS_NAMESPACE = settingsNamespace('dsh-vibe')
+
+export const SHAKE_LEVELS = ['off', 'light', 'medium', 'strong'] as const
+export type ShakeLevel = (typeof SHAKE_LEVELS)[number]
+
+/**
+ * 插件配置（配置式写法，见 cordis-tutorial/05-config）：
+ * - 导出 Config 接口 + 同名 Schemastery schema，默认值写在 schema 里；
+ * - 部署者在 cordis.yml 的 entry config 块覆盖（如 profile 的 cordis.patch.yml）；
+ * - Cordis 在 apply 前校验，错误配置直接加载失败；配置变更触发 HMR 热替换。
+ * 经官方 installSettingsSection（cookbook/adding-a-settings-card）注册为 settings namespace：
+ * entry 配置层叠在用户文档之下，解析值 = schema 默认 < cordis.yml entry < 用户覆盖。
+ */
+export interface Config {
+  enabled: boolean
+  feedback: boolean
+  flame: boolean
+  shake: ShakeLevel
+  response: boolean
+  pageShake: boolean
+  pageShakeLevel: ShakeLevel
+  sound: boolean
+  opacity: number
+  scale: number
+}
+
+export const Config: z<Config> = z.object({
+  enabled: z.boolean().default(true),
+  // 组总开关：打字反馈（火焰 + 输入抖动）、回答反馈（整页抖动 + 提示音）
+  feedback: z.boolean().default(true),
+  flame: z.boolean().default(true),
+  shake: z.union([...SHAKE_LEVELS]).default('off'),
+  response: z.boolean().default(true),
+  pageShake: z.boolean().default(true),
+  // 回答后整页抖动的独立强度档位（不跟随输入抖动）
+  pageShakeLevel: z.union([...SHAKE_LEVELS]).default('off'),
+  sound: z.boolean().default(true),
+  opacity: z.number().min(0.1).max(1).default(0.5),
+  scale: z.number().min(0.6).max(1.5).default(1),
+})
 
 function sseData(frame: { type: string }): string {
   return 'data: ' + JSON.stringify(frame) + '\n\n'
@@ -6,7 +51,17 @@ function sseData(frame: { type: string }): string {
 
 export default {
   inject: ['webServer'],
-  apply(ctx: any) {
+  apply(ctx: any, config: Config) {
+    // 配置来源：默认 cordis.yml entry；settings 用户层写入后切到解析值。
+    let source: () => Config = () => config
+    installSettingsSection(ctx, VIBE_SETTINGS_NAMESPACE, Config, config, {
+      setSource: (get: () => Config) => { source = get },
+      onChange: () => {
+        // 宿主目前不消费配置值（渲染在浏览器侧）；保持来源最新即可。
+        void source()
+      },
+    })
+
     const connections = new Set<any>()
 
     function broadcast(type: string) {

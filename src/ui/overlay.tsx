@@ -1,9 +1,9 @@
 import * as React from 'react'
-import { getConfig, subscribeConfig, VibeConfig } from './config'
+import { getConfig, subscribeConfig, VibeConfig } from '../settings/config'
 import { computeCaretPosition } from './caret'
-import { initFlame, spawnFlame, stopFlame } from './flame'
-import { primeAudio } from './audio'
-import { triggerShake, stopShake } from './shake'
+import { initFlame, spawnFlame, stopFlame } from '../fx/flame'
+import { primeAudio } from '../fx/audio'
+import { triggerShake, stopShake } from '../fx/shake'
 import { KeyboardMain, ArrowView, MouseView, MouseState } from './keyboard'
 
 export function Overlay() {
@@ -132,6 +132,9 @@ export function Overlay() {
   }, [])
 
   // position / layout measurement
+  // 输入框的位置会随多种情况变化：视口缩放、任意滚动（含内部容器）、内容增长把输入框
+  // 往下推（AI 回复后 composer 从垂直居中移到下方）、shell 布局重排（侧边栏切换等）。
+  // 这里统一监听所有这些来源，用 rAF 合并高频触发，只有位置实际变化才更新 state。
   React.useEffect(() => {
     function measure() {
       const overlay = document.querySelector('[data-shell-overlay]')
@@ -142,31 +145,54 @@ export function Overlay() {
         const m2 = tpl.match(/([\d.]+)px\s*$/)
         const sidebarW = m1 ? parseFloat(m1[1]) : 0
         const detailsW = m2 ? parseFloat(m2[1]) : 0
-        setLeft(Math.round(sidebarW + (window.innerWidth - sidebarW - detailsW) / 2))
+        const l = Math.round(sidebarW + (window.innerWidth - sidebarW - detailsW) / 2)
+        setLeft((prev) => (prev === l ? prev : l))
       }
       const el = document.querySelector('[data-composer-card]') || document.querySelector('[data-composer-seat]')
       if (el) {
         const rect = el.getBoundingClientRect()
-        setBottom(Math.round(window.innerHeight - rect.top + 10))
+        const b = Math.round(window.innerHeight - rect.top + 10)
+        setBottom((prev) => (prev === b ? prev : b))
       }
     }
+    let rafId: number | null = null
+    function scheduleMeasure() {
+      if (rafId !== null) return
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null
+        measure()
+      })
+    }
     measure()
-    window.addEventListener('resize', measure)
+    window.addEventListener('resize', scheduleMeasure)
+    // capture 阶段监听，覆盖所有内部滚动容器（聊天区滚动也会移动输入框）
+    window.addEventListener('scroll', scheduleMeasure, true)
     let obs: ResizeObserver | null = null
-    const seat = document.querySelector('[data-composer-card]') || document.querySelector('[data-composer-seat]')
-    if (seat && typeof ResizeObserver !== 'undefined') {
-      obs = new ResizeObserver(measure)
-      obs.observe(seat)
+    if (typeof ResizeObserver !== 'undefined') {
+      obs = new ResizeObserver(scheduleMeasure)
+      const seat = document.querySelector('[data-composer-card]') || document.querySelector('[data-composer-seat]')
+      if (seat) obs.observe(seat)
+      // 内容增长（如 AI 流式回复）会把输入框往下推：观察 body/html 尺寸变化
+      obs.observe(document.body)
+      obs.observe(document.documentElement)
     }
     let mo: MutationObserver | null = null
     const ov = document.querySelector('[data-shell-overlay]')
     const fr = ov ? ov.parentElement : null
     if (fr && typeof MutationObserver !== 'undefined') {
-      mo = new MutationObserver(measure)
-      mo.observe(fr, { attributes: true, attributeFilter: ['style', 'data-sidebar-collapsed', 'data-details-collapsed'] })
+      mo = new MutationObserver(scheduleMeasure)
+      // childList + subtree：输入框被移动/重排、聊天内容插入等都会触发重新测量
+      mo.observe(fr, {
+        attributes: true,
+        attributeFilter: ['style', 'class', 'data-sidebar-collapsed', 'data-details-collapsed'],
+        childList: true,
+        subtree: true,
+      })
     }
     return () => {
-      window.removeEventListener('resize', measure)
+      window.removeEventListener('resize', scheduleMeasure)
+      window.removeEventListener('scroll', scheduleMeasure, true)
+      if (rafId !== null) window.cancelAnimationFrame(rafId)
       if (obs) obs.disconnect()
       if (mo) mo.disconnect()
     }
@@ -179,7 +205,7 @@ export function Overlay() {
   rootStyle.transform = 'translateX(-50%) scale(' + cfg.scale + ')'
 
   const keyboard = left !== null ? (
-    <div className="vibe-fixed vibe-z-40 vibe-pointer-events-none vibe-origin-[50%_100%] vibe-transition-[left] vibe-duration-300 [@media(max-width:920px)]:vibe-hidden motion-reduce:vibe-transition-none" style={rootStyle}>
+    <div className="vibe-fixed vibe-z-40 vibe-pointer-events-none vibe-origin-[50%_100%] vibe-transition-[left,bottom] vibe-duration-300 [@media(max-width:920px)]:vibe-hidden motion-reduce:vibe-transition-none" style={rootStyle}>
       <div className="vibe-flex vibe-items-stretch vibe-gap-[3px]">
         <KeyboardMain pressed={pressed} />
         <div className="vibe-flex vibe-flex-col vibe-justify-between vibe-items-center">

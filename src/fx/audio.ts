@@ -1,4 +1,4 @@
-import { getConfig } from './config'
+import { getConfig } from '../settings/config'
 
 let audioCtx: AudioContext | null = null
 
@@ -17,7 +17,9 @@ export function primeAudio(): void {
 }
 
 export function playAnswerSound(): void {
-  if (getConfig().sound === false) return
+  const cfg = getConfig()
+  // 回答反馈组总开关：关闭（response=false）时提示音也停
+  if (cfg.response === false || cfg.pageShake === false || cfg.sound === false) return
   let ctx: AudioContext | null = null
   try { ctx = ensureAudio() } catch {}
   if (!ctx) return
