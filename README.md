@@ -67,20 +67,20 @@ src/
 ```
 
 ```bash
-npm install          # 安装 devDependencies（vite / unocss / react / types）
-npm run build        # 构建 lib/index.js（宿主）+ lib/client.js（客户端）
-npm run build:host   # 只构建宿主（vite.host.config.ts）
-npm run build:client # 只构建客户端（vite.client.config.ts）
-npm run watch        # 监听 src/ 自动重建客户端（配合 harness 内置 HMR）
+pnpm install         # 安装 devDependencies（vite / unocss / react / types）
+pnpm run build       # 构建 lib/index.js（宿主）+ lib/client.js（客户端）
+pnpm run build:host  # 只构建宿主（vite.host.config.ts）
+pnpm run build:client# 只构建客户端（vite.client.config.ts）
+pnpm run watch       # 监听 src/ 自动重建客户端（配合 harness 内置 HMR）
 ```
 
 构建全走 **Vite**：`vite.host.config.ts`（宿主 ESM lib mode，harness 内部包 external）+ `vite.client.config.ts`（客户端 CJS lib mode）。UnoCSS 与 ModuleLoader 包装作为 Vite 插件（`vite.shared.ts`）：扫描 src/ 提取 `vibe-*` 原子类生成 CSS 内联进客户端，浏览器运行时注入 `<style>`。
 
 **UnoCSS**：全部样式都是原子类（utility），不再有手写 CSS 文件。原子类统一带 `vibe-` 前缀避免与 DSH 类名冲突；键盘/鼠标/火焰等组件样式同样拆成原子类写在组件 `className` 里（如 `vibe-h-[30px]`、`vibe-bg-[rgba(88,150,255,0.18)]`），深色模式用自定义变体 `dsh-dark:`（映射到 `body[data-ds-dark-theme]`），窄屏隐藏用 `[@media(max-width:920px)]:` 变体，减弱动效用 `motion-reduce:` 变体。构建时由 Vite 插件（`vite.shared.ts`）扫描 `src/` 生成全部 CSS。
 
-**本地开发**（无需 git 提交）：改 `src/` → 跑 `npm run watch`，自动重建 `lib/`；客户端半边 `lib/client.js` 由 harness 内置的 `dsh-client-hmr` 热替换，浏览器即时生效。只有改到**宿主半边**（`lib/index.js`，如 session/event、SSE 路由）时才需要重启 harness。
+**本地开发**（无需 git 提交）：改 `src/` → 跑 `pnpm run watch`，自动重建 `lib/`；客户端半边 `lib/client.js` 由 harness 内置的 `dsh-client-hmr` 热替换，浏览器即时生效。只有改到**宿主半边**（`lib/index.js`，如 session/event、SSE 路由）时才需要重启 harness。
 
-**发布**：`npm run build` → bump `package.json` 的 `version` → 提交（含 `lib/`）→ `dsh plugin remove dsh-vibe` + `dsh plugin add github:lhf6623/dsh-keyboard`。
+**发布**：`pnpm run build` → bump `package.json` 的 `version` → 提交（含 `lib/` 与 `pnpm-lock.yaml`）→ `dsh plugin remove dsh-vibe` + `dsh plugin add github:lhf6623/dsh-keyboard`。
 
 ## 版本记录
 
