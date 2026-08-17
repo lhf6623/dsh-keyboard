@@ -62,11 +62,11 @@ export function VibeCard() {
       </div>
       {cfg.enabled && (
         <>
-          <Row title="键盘透明度" desc="键盘与鼠标的整体透明度" indent>
+          <Row title="键盘透明度" indent>
             <input className={RANGE} type="range" min="0.1" max="1" step="0.05" value={cfg.opacity} onChange={(e) => update({ opacity: parseFloat(e.target.value) })} />
             <span className={VALUE}>{Math.round(cfg.opacity * 100)}%</span>
           </Row>
-          <Row title="键盘缩放" desc="键盘与鼠标的整体缩放比例" last indent>
+          <Row title="键盘缩放" last indent>
             <input className={RANGE} type="range" min="0.6" max="1.5" step="0.05" value={cfg.scale} onChange={(e) => update({ scale: parseFloat(e.target.value) })} />
             <span className={VALUE}>{Math.round(cfg.scale * 100)}%</span>
           </Row>
@@ -80,10 +80,10 @@ export function VibeCard() {
       </div>
       {cfg.feedback && (
         <>
-          <Row title="打字火焰" desc="打字时在光标处喷出火焰粒子" indent>
+          <Row title="打字火焰" indent>
             <input className={CHECKBOX} type="checkbox" checked={cfg.flame} onChange={(e) => update({ flame: e.target.checked })} />
           </Row>
-          <Row title="输入抖动" desc="每次输入给输入框一个轻微的水平震动" last indent>
+          <Row title="输入抖动" last indent>
             <div className="vibe-inline-flex vibe-gap-1.5">
               {SHAKE_LEVELS.map((level) => (
                 <button key={level} type="button"
@@ -104,10 +104,10 @@ export function VibeCard() {
       </div>
       {cfg.response && (
         <>
-          <Row title="回答后整页抖动" desc="AI 回答完成时给整页一个轻微震动" indent>
+          <Row title="回答后整页抖动" indent>
             <input className={CHECKBOX} type="checkbox" checked={cfg.pageShake} onChange={(e) => update({ pageShake: e.target.checked })} />
           </Row>
-          <Row title="整页抖动强度" desc="回答完成时整页抖动的强度（独立于输入抖动）" indent>
+          <Row title="整页抖动强度" indent>
             <div className="vibe-inline-flex vibe-gap-1.5">
               {SHAKE_LEVELS.map((level) => (
                 <button key={level} type="button"
@@ -118,7 +118,7 @@ export function VibeCard() {
               ))}
             </div>
           </Row>
-          <Row title="回答提示音" desc="AI 回答完成时播放一声提示音" last indent>
+          <Row title="回答提示音" last indent>
             <input className={CHECKBOX} type="checkbox" checked={cfg.sound} onChange={(e) => update({ sound: e.target.checked })} />
           </Row>
         </>
