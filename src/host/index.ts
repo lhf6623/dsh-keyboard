@@ -3,11 +3,12 @@ import {
   installSettingsSection,
   settingsNamespace,
 } from "@deepseek-ai/dsh-settings";
+import { pluginName } from "@/shared/identity";
 
-export const name = "dsh-vibe";
+export const name = pluginName();
 
-/** Settings namespace owned by dsh-vibe（浏览器侧经 settingsScope 读写）。 */
-export const VIBE_SETTINGS_NAMESPACE = settingsNamespace("dsh-vibe");
+/** Settings namespace owned by this plugin（浏览器侧经 settingsScope 读写）。 */
+export const VIBE_SETTINGS_NAMESPACE = settingsNamespace(pluginName());
 
 export const SHAKE_LEVELS = ["off", "light", "medium", "strong"] as const;
 export type ShakeLevel = (typeof SHAKE_LEVELS)[number];

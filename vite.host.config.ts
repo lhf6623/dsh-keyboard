@@ -1,11 +1,14 @@
 import { defineConfig } from "vite";
-import { syncToProfile } from "./vite.shared.ts";
+import { ID, assertPatchName, resolve, syncToProfile } from "./vite.shared.ts";
+
+assertPatchName();
 
 // 宿主：Vite lib mode（ESM，harness 内部包 external）
 export default defineConfig({
+  resolve,
   plugins: [
     {
-      name: "dsh-vibe:sync-host",
+      name: `${ID}:sync-host`,
       writeBundle() {
         syncToProfile("lib/index.js");
       },

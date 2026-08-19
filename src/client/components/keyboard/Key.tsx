@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useEffect, useRef, useState } from "react";
 
 // —— 键帽：单一静态外观（按键反馈由动物翻面表达）——
 const KEY_BASE = [
@@ -14,14 +14,14 @@ const KEY_BASE = [
 ].join(" ");
 
 export function Key(props: { label: string; w: number; animal?: string }) {
-  const flipRef = React.useRef<HTMLDivElement | null>(null);
+  const flipRef = useRef<HTMLDivElement | null>(null);
   // 背面展示的动物：props.animal 消失时先播翻回动画、结束再清空（避免动物瞬移消失）；
   // 已翻面时换动物只替换内容，不重播动画。
-  const [shown, setShown] = React.useState<string | undefined>(props.animal);
-  const [flipped, setFlipped] = React.useState(false);
-  const flippedRef = React.useRef(false);
+  const [shown, setShown] = useState<string | undefined>(props.animal);
+  const [flipped, setFlipped] = useState(false);
+  const flippedRef = useRef(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (props.animal !== undefined) {
       setShown(props.animal);
       setFlipped(true);

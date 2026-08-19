@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useEffect, useState } from "react";
 
 /**
  * 输入框上方悬浮层的位置测量：bottom = 距视口底部，left = 内容区水平中心（未测得为 null）。
@@ -7,10 +7,10 @@ import * as React from "react";
  * 这里统一监听所有这些来源，用 rAF 合并高频触发，只有位置实际变化才更新 state。
  */
 export function useComposerPosition(): { bottom: number; left: number | null } {
-  const [bottom, setBottom] = React.useState(170);
-  const [left, setLeft] = React.useState<number | null>(null);
+  const [bottom, setBottom] = useState(170);
+  const [left, setLeft] = useState<number | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     function measure() {
       const overlay = document.querySelector("[data-shell-overlay]");
       const frame = overlay ? overlay.parentElement : null;

@@ -1,3 +1,5 @@
+import { configStorageKey } from '@/shared/identity'
+
 export type ShakeLevel = 'off' | 'light' | 'medium' | 'strong'
 export type MoleFrequency = 'low' | 'medium' | 'high'
 
@@ -24,7 +26,7 @@ export const DEFAULTS: VibeConfig = {
 
 // 持久化键：localStorage（浏览器本地，发布后依然有效）。
 // 系统 settings（settingsScope）可用时（白名单暴露）优先读系统值并回写，未暴露时 localStorage 是唯一存储。
-const KEY = 'dsh-vibe.config'
+const KEY = configStorageKey()
 
 function clamp(v: unknown, min: number, max: number, def: number): number {
   const n = typeof v === 'number' && !Number.isNaN(v) ? v : def

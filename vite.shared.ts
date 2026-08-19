@@ -12,8 +12,18 @@ import {
 } from "node:fs";
 import { join, basename } from "node:path";
 import { homedir } from "node:os";
+import { fileURLToPath } from "node:url";
+import { pluginName } from "./src/shared/identity.ts";
 
-export const ID = "dsh-vibe";
+/** 插件身份唯一真源：src/shared/identity（读取 package.json 的 name）。 */
+export const ID = pluginName();
+
+/** `@/` → src/（与 tsconfig 的 paths 保持一致），供各 vite 配置展开使用。 */
+export const resolve = {
+  alias: {
+    "@": fileURLToPath(new URL("./src", import.meta.url)),
+  },
+};
 
 /**
  * 运行中 harness 的插件安装位置 (dsh-client-hmr 轮询监控这里的 client.js)。
@@ -21,20 +31,14 @@ export const ID = "dsh-vibe";
  * 解析顺序:
  *   1. 环境变量 DSH_VIBE_PROFILE_LIB (完整路径, 最优先)
  *   2. 环境变量 DSH_VIBE_PROFILE (profile 名, 如 'web')
- *   3. 自动扫描 ~/.dsh/profiles 下所有装了 dsh-vibe 的 profile (取第一个存在的)
+ *   3. 自动扫描 ~/.dsh/profiles 下所有装了本插件的 profile (取第一个存在的)
  * 找不到则禁用同步 (静默跳过)。
  */
 function discoverProfileLib(): string | null {
   try {
     const profilesRoot = join(homedir(), ".dsh", "profiles");
     for (const name of readdirSync(profilesRoot)) {
-      const candidate = join(
-        profilesRoot,
-        name,
-        "node_modules",
-        "dsh-vibe",
-        "lib",
-      );
+      const candidate = join(profilesRoot, name, "node_modules", ID, "lib");
       if (existsSync(candidate)) return candidate;
     }
   } catch {}
@@ -50,7 +54,7 @@ const PROFILE_LIB =
         "profiles",
         process.env.DSH_VIBE_PROFILE,
         "node_modules",
-        "dsh-vibe",
+        ID,
         "lib",
       )
     : "") ||
@@ -62,7 +66,7 @@ export function syncToProfile(file: string): void {
   try {
     if (!PROFILE_LIB || !existsSync(PROFILE_LIB)) return;
     copyFileSync(file, join(PROFILE_LIB, basename(file)));
-    console.log("[dsh-vibe] synced", basename(file), "→", PROFILE_LIB);
+    console.log(`[${ID}] synced`, basename(file), "→", PROFILE_LIB);
   } catch {}
 }
 
@@ -88,7 +92,7 @@ async function generateUnoCss(): Promise<string> {
     .map((f) => readFileSync(f, "utf8"))
     .join("\n");
   const extracted = await uno.applyExtractors(source);
-  const { css } = await uno.generate(extracted, { preflights: true });
+  const { css } = await uno.generate(extracted, { preflights: true, minify: true });
   return css;
 }
 
@@ -98,7 +102,7 @@ async function generateUnoCss(): Promise<string> {
  */
 export function unocssCssPlugin(): Plugin {
   return {
-    name: "dsh-vibe:unocss-css",
+    name: `${ID}:unocss-css`,
     async writeBundle() {
       writeFileSync("lib/client.css", await generateUnoCss());
     },
@@ -111,7 +115,7 @@ export function unocssCssPlugin(): Plugin {
  */
 export function moduleLoaderWrapPlugin(): Plugin {
   return {
-    name: "dsh-vibe:module-loader-wrap",
+    name: `${ID}:module-loader-wrap`,
     async writeBundle() {
       const js = readFileSync("lib/client.cjs.js", "utf8");
       const css = readFileSync("lib/client.css", "utf8");
@@ -137,4 +141,25 @@ ${js}
       syncToProfile("lib/client.js");
     },
   };
+}
+
+/**
+ * 构建期校验：cordis.patch.yml 的宿主行 name 必须等于包名。
+ * harness 按包名解析插件行（Node 模块解析才能找到已安装代码），
+ * patch 是静态 YAML 无法 import，所以用校验保证它与 package.json 同步。
+ * 逐行检查、忽略注释——注释里的示例写法不能顶替真实行。
+ * 由各 vite 配置在启动构建时调用。
+ */
+export function assertPatchName(): void {
+  const patch = readFileSync("cordis.patch.yml", "utf8");
+  for (const line of patch.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const m = /^name:\s*["']([^"']+)["']$/.exec(trimmed);
+    if (m && m[1] !== ID) {
+      throw new Error(
+        `cordis.patch.yml 的宿主行 name "${m[1]}" 必须等于包名 "${ID}"（与 package.json 同步）`,
+      );
+    }
+  }
 }

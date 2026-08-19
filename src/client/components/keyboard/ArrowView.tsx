@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Key } from "./Key";
 
 export function ArrowView(props: { animals: Record<string, string> }) {

@@ -1,11 +1,11 @@
-import * as React from "react";
+import type { ReactNode } from "react";
 import {
   setConfig,
   VibeConfig,
   ShakeLevel,
   MoleFrequency,
-} from "../lib/config";
-import { useConfig } from "../hooks/useConfig";
+} from "@/client/lib/config";
+import { useConfig } from "@/client/hooks/useConfig";
 
 const SHAKE_LABELS: Record<ShakeLevel, string> = {
   off: "关",
@@ -74,7 +74,7 @@ function Row(props: {
   desc?: string;
   last?: boolean;
   indent?: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div

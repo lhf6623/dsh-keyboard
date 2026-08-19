@@ -1,7 +1,7 @@
-import * as React from "react";
-import { useConfig } from "../hooks/useConfig";
-import { useMouseState } from "../hooks/useMouseState";
-import { useComposerPosition } from "../hooks/useComposerPosition";
+import type { CSSProperties } from "react";
+import { useConfig } from "@/client/hooks/useConfig";
+import { useMouseState } from "@/client/hooks/useMouseState";
+import { useComposerPosition } from "@/client/hooks/useComposerPosition";
 import { useKeyAnimals } from "./keyboard/useKeyAnimals";
 import { KeyboardMain } from "./keyboard/KeyboardMain";
 import { ArrowView } from "./keyboard/ArrowView";
@@ -13,7 +13,7 @@ export function Overlay() {
   const { bottom, left } = useComposerPosition();
   const animals = useKeyAnimals();
 
-  const rootStyle: React.CSSProperties = { bottom: bottom + "px" };
+  const rootStyle: CSSProperties = { bottom: bottom + "px" };
   if (left !== null) rootStyle.left = left + "px";
   if (!cfg.enabled) rootStyle.display = "none";
   rootStyle.opacity = cfg.opacity;

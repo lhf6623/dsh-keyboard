@@ -1,4 +1,3 @@
-import * as React from "react";
 import { ROWS } from "./layout";
 import { Key } from "./Key";
 

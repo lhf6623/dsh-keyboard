@@ -4,12 +4,13 @@ import { playAnswerSound, attachAudioPrime } from "./lib/fx/audio";
 import { shakePage, attachInputShake } from "./lib/fx/shake";
 import { attachFlame } from "./lib/fx/flame";
 import { attachSettings, normalizeConfig } from "./lib/config";
+import { pluginName } from "@/shared/identity";
 
 export const inject = ["slots", "connection", "remote", "settingsScope"];
 
 export function apply(ctx: any) {
   ctx.slots.inject("shell.overlay", () =>
-    ctx.slots.register({ name: "shell.overlay", id: "dsh-vibe" }, Overlay),
+    ctx.slots.register({ name: "shell.overlay", id: pluginName() }, Overlay),
   );
   // 独立「氛围」设置标签（settings.section）：显示不依赖 api-proxy 白名单，
   // 与系统设置面板同级的单独配置页。
@@ -23,7 +24,7 @@ export function apply(ctx: any) {
   // 浏览器只读；namespace 未被 api-proxy 白名单暴露时 scope 为 unavailable，读取默认值。
   ctx.inject(["settingsScope"], (sctx: any) => {
     const scope = sctx.settingsScope.bind({
-      namespace: "dsh-vibe",
+      namespace: pluginName(),
       decode: (raw: unknown) => normalizeConfig(raw),
     });
     attachSettings(scope);

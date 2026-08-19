@@ -1,6 +1,9 @@
 node_modules/
 package-lock.json
 
+# macOS Finder 目录元数据
+.DS_Store
+
 .pnpm-store
 
 # 测试/临时文件目录（agent 测试产物统一放这里，不提交）

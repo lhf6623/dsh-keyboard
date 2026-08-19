@@ -1,5 +1,4 @@
-import * as React from "react";
-import { MouseState } from "../../hooks/useMouseState";
+import { MouseState } from "@/client/hooks/useMouseState";
 
 // —— 鼠标：机身/按键/滚轮，配色按状态二选一渲染 ——
 const MOUSE_BODY = [

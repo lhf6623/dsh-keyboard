@@ -1,12 +1,12 @@
-import * as React from "react";
+import { useEffect, useState } from "react";
 import {
   onMouseDown,
   onMouseUp,
   onMouseMove,
   onMouseLeave,
   onWheel,
-} from "../lib/events/mouse";
-import { onPageDeactivate } from "../lib/events/page";
+} from "@/client/lib/events/mouse";
+import { onPageDeactivate } from "@/client/lib/events/page";
 
 export interface MouseState {
   left: boolean;
@@ -17,14 +17,14 @@ export interface MouseState {
 
 /** 全局鼠标状态：左/中/右键与滚轮（滚轮 180ms 后自动回落）。订阅鼠标事件源（events/mouse.ts）。 */
 export function useMouseState(): MouseState {
-  const [mouse, setMouse] = React.useState<MouseState>({
+  const [mouse, setMouse] = useState<MouseState>({
     left: false,
     right: false,
     middle: false,
     wheel: false,
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     function clearMouse() {
       setMouse((prev) =>
         !prev.left && !prev.right && !prev.middle && !prev.wheel

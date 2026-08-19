@@ -1,8 +1,8 @@
-import * as React from "react";
+import { useEffect, useState } from "react";
 import { ROWS } from "./layout";
-import { useConfig } from "../../hooks/useConfig";
-import { onKeyDown } from "../../lib/events/keyboard";
-import { reducedMotion } from "../../lib/fx/motion";
+import { useConfig } from "@/client/hooks/useConfig";
+import { onKeyDown } from "@/client/lib/events/keyboard";
+import { reducedMotion } from "@/client/lib/fx/motion";
 
 // —— 动物图标池：程序化枚举 Unicode 动物区段（零依赖、无重复、权重均匀）——
 // 区段 1F400-1F43F（6.0-7.0，哺乳/鸟类/鱼类）与 1F980-1F99F（8.0-11.0，补充动物）。
@@ -62,11 +62,11 @@ function pick(): string {
 export function useKeyAnimals(): Record<string, string> {
   const cfg = useConfig();
   // 统一动物池：头部最老、尾部最新；自动翻与按下翻共用
-  const [pool, setPool] = React.useState<
+  const [pool, setPool] = useState<
     Array<{ code: string; animal: string }>
   >([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // 池子调小立即生效：只保留最新几只
     setPool((p) =>
       p.length > cfg.molePoolSize ? p.slice(p.length - cfg.molePoolSize) : p,
