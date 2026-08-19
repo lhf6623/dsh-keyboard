@@ -11,8 +11,7 @@ assertPatchName();
 // 客户端：Vite lib mode（CJS）+ UnoCSS 生成 + ModuleLoader 包装
 export default defineConfig({
   resolve,
-  // 自动 JSX runtime（react/jsx-runtime）：组件无需 import React；与 harness 官方客户端插件一致
-  esbuild: { jsx: "automatic" },
+  // JSX 自动 runtime（react/jsx-runtime）是 Vite 8 默认值：组件无需 import React
   plugins: [unocssCssPlugin(), moduleLoaderWrapPlugin()],
   build: {
     lib: {
