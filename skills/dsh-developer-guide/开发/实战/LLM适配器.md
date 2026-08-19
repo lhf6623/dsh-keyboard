@@ -9,12 +9,18 @@ LLM 适配器是一个继承 `LlmAdapter` 并实现 `stream()` 方法的类：�
 ## 最小实现
 
 ```ts
-import type { Context } from '@deepseek-ai/cordis'
-import Schema from '@deepseek-ai/schemastery'
-import { LlmAdapter, type GenerateOptions, type StreamChunk } from '@deepseek-ai/dsh-llm'
+import type { Context } from "@deepseek-ai/cordis";
+import Schema from "@deepseek-ai/schemastery";
+import {
+  LlmAdapter,
+  type GenerateOptions,
+  type StreamChunk,
+} from "@deepseek-ai/dsh-llm";
 
 class MyAdapter extends LlmAdapter {
-  constructor(private readonly apiKey: string) { super() }
+  constructor(private readonly apiKey: string) {
+    super();
+  }
 
   async *stream(options: GenerateOptions): AsyncIterable<StreamChunk> {
     // 1. 把 options.messages 转成提供方格式
@@ -24,20 +30,20 @@ class MyAdapter extends LlmAdapter {
 }
 
 export interface Config {
-  apiKey: string
-  providers: string[]
+  apiKey: string;
+  providers: string[];
 }
 
 export const Config: Schema<Config> = Schema.object({
   apiKey: Schema.string().required(),
   providers: Schema.array(Schema.string()).required(),
-})
+});
 
-export const name = 'my-llm-adapter'
-export const inject = ['llm']
+export const name = "my-llm-adapter";
+export const inject = ["llm"];
 
 export function apply(ctx: Context, config: Config) {
-  ctx.llm.registerAdapter(config.providers, new MyAdapter(config.apiKey))
+  ctx.llm.registerAdapter(config.providers, new MyAdapter(config.apiKey));
 }
 ```
 
@@ -45,18 +51,37 @@ export function apply(ctx: Context, config: Config) {
 
 ```ts
 async function* exampleChunks(): AsyncIterable<StreamChunk> {
-  yield { type: 'block-start', index: 0, blockType: 'text' }
-  yield { type: 'text-delta', index: 0, text: 'Hello' }
-  yield { type: 'text-delta', index: 0, text: ' world' }
-  yield { type: 'block-end', index: 0, block: { type: 'text', text: 'Hello world' } }
+  yield { type: "block-start", index: 0, blockType: "text" };
+  yield { type: "text-delta", index: 0, text: "Hello" };
+  yield { type: "text-delta", index: 0, text: " world" };
+  yield {
+    type: "block-end",
+    index: 0,
+    block: { type: "text", text: "Hello world" },
+  };
 
   // 工具调用块
-  yield { type: 'block-start', index: 1, blockType: 'tool-call' }
-  yield { type: 'tool-call-delta', index: 1, id: CallId('call-123'), name: 'bash', argumentsDelta: '{"command":"ls"}' }
-  yield { type: 'block-end', index: 1, block: { type: 'tool-call', id: CallId('call-123'), name: 'bash', arguments: '{"command":"ls"}' } }
+  yield { type: "block-start", index: 1, blockType: "tool-call" };
+  yield {
+    type: "tool-call-delta",
+    index: 1,
+    id: CallId("call-123"),
+    name: "bash",
+    argumentsDelta: '{"command":"ls"}',
+  };
+  yield {
+    type: "block-end",
+    index: 1,
+    block: {
+      type: "tool-call",
+      id: CallId("call-123"),
+      name: "bash",
+      arguments: '{"command":"ls"}',
+    },
+  };
 
-  yield { type: 'usage', usage: { inputTokens: 100, outputTokens: 50 } }
-  yield { type: 'finish', reason: { kind: 'stop' } }   // { kind: 'tool-calls' } = 请求工具执行
+  yield { type: "usage", usage: { inputTokens: 100, outputTokens: 50 } };
+  yield { type: "finish", reason: { kind: "stop" } }; // { kind: 'tool-calls' } = 请求工具执行
 }
 ```
 
@@ -77,14 +102,14 @@ async function* exampleChunks(): AsyncIterable<StreamChunk> {
 
 ```yaml
 - id: my-llm
-  name: './src/my-llm-adapter.ts'
+  name: "./src/my-llm-adapter.ts"
   config:
     apiKey: !!js process.env.MY_API_KEY
     providers:
       - my-provider
 
 - id: agent-loop
-  name: '@deepseek-ai/dsh-agent-loop'
+  name: "@deepseek-ai/dsh-agent-loop"
   config:
     agents:
       - id: main

@@ -1,61 +1,86 @@
-import * as React from 'react'
+import * as React from "react";
 
-// —— 键帽：布局为状态无关的公共类，配色/阴影/位移按「按下与否」二选一，避免同类叠加覆盖 ——
-const KEY_LAYOUT = 'vibe-flex vibe-items-center vibe-justify-center vibe-h-[30px] vibe-box-border vibe-rounded-md vibe-border vibe-border-solid vibe-text-[10px] vibe-font-mono vibe-transition-[transform,box-shadow,background-color,color]'
+// —— 键帽：单一静态外观（按键反馈由动物翻面表达）——
+const KEY_BASE = [
+  "vibe-flex vibe-items-center vibe-justify-center vibe-h-[30px] vibe-box-border vibe-rounded-md vibe-border vibe-border-solid vibe-text-[10px] vibe-font-mono",
+  "vibe-border-[rgba(0,0,0,0.2)]",
+  "vibe-bg-[rgba(255,255,255,0.25)]",
+  "vibe-text-[rgba(0,0,0,0.45)]",
+  "vibe-shadow-[0_1px_0_rgba(0,0,0,0.08)]",
+  "dsh-dark:vibe-border-[rgba(255,255,255,0.14)]",
+  "dsh-dark:vibe-bg-[rgba(255,255,255,0.07)]",
+  "dsh-dark:vibe-text-[rgba(255,255,255,0.72)]",
+  "dsh-dark:vibe-shadow-[0_1px_0_rgba(0,0,0,0.35)]",
+].join(" ");
 
-const KEY_UP = [
-  'vibe-border-[rgba(0,0,0,0.2)]',
-  'vibe-bg-[rgba(255,255,255,0.25)]',
-  'vibe-text-[rgba(0,0,0,0.45)]',
-  'vibe-shadow-[0_1px_0_rgba(0,0,0,0.08)]',
-  'dsh-dark:vibe-border-[rgba(255,255,255,0.14)]',
-  'dsh-dark:vibe-bg-[rgba(255,255,255,0.07)]',
-  'dsh-dark:vibe-text-[rgba(255,255,255,0.72)]',
-  'dsh-dark:vibe-shadow-[0_1px_0_rgba(0,0,0,0.35)]',
-].join(' ')
+export function Key(props: { label: string; w: number; animal?: string }) {
+  const flipRef = React.useRef<HTMLDivElement | null>(null);
+  // 背面展示的动物：props.animal 消失时先播翻回动画、结束再清空（避免动物瞬移消失）；
+  // 已翻面时换动物只替换内容，不重播动画。
+  const [shown, setShown] = React.useState<string | undefined>(props.animal);
+  const [flipped, setFlipped] = React.useState(false);
+  const flippedRef = React.useRef(false);
 
-const KEY_DOWN = [
-  'vibe-translate-y-[2px]',
-  'vibe-border-[rgba(0,0,0,0.3)]',
-  'vibe-bg-[rgba(88,150,255,0.18)]',
-  'vibe-text-[rgba(0,0,0,0.6)]',
-  'vibe-shadow-none',
-  'dsh-dark:vibe-border-[rgba(120,170,255,0.5)]',
-  'dsh-dark:vibe-bg-[rgba(88,150,255,0.3)]',
-  'dsh-dark:vibe-text-[rgba(255,255,255,0.95)]',
-].join(' ')
-
-export function Key(props: { label: string; w: number; on: boolean; mole?: string }) {
-  const cls = KEY_LAYOUT + ' ' + (props.on ? KEY_DOWN : KEY_UP)
-  const flipRef = React.useRef<HTMLDivElement | null>(null)
-  // 键帽内部内容翻转：正面字母 ↔ 背面小动物（键帽边框/背景不动）
   React.useEffect(() => {
-    const el = flipRef.current
-    if (!props.mole || !el) return
-    el.animate(
-      [
-        { transform: 'rotateY(0deg)' },
-        { transform: 'rotateY(180deg)', offset: 0.5 },
-        { transform: 'rotateY(180deg)', offset: 0.8 },
-        { transform: 'rotateY(360deg)' },
-      ],
-      { duration: 2400, easing: 'ease-in-out', fill: 'forwards' },
-    )
-  }, [props.mole])
+    if (props.animal !== undefined) {
+      setShown(props.animal);
+      setFlipped(true);
+      flippedRef.current = true;
+      return;
+    }
+    if (!flippedRef.current) return;
+    flippedRef.current = false;
+    setFlipped(false);
+    const el = flipRef.current;
+    if (!el) {
+      setShown(undefined);
+      return;
+    }
+    const onEnd = (ev: TransitionEvent) => {
+      if (ev.propertyName !== "transform") return;
+      setShown(undefined);
+      el.removeEventListener("transitionend", onEnd);
+    };
+    el.addEventListener("transitionend", onEnd);
+    return () => el.removeEventListener("transitionend", onEnd);
+  }, [props.animal]);
 
   return (
-    <div className={cls + ' vibe-relative'} style={{ width: Math.round(props.w * 30 + (props.w - 1) * 5) + 'px', perspective: 260 }}>
-      {/* 键帽不动，内部内容层翻面 */}
-      <div ref={flipRef} className="vibe-absolute vibe-inset-0" style={{ transformStyle: 'preserve-3d' }}>
-        <div className="vibe-absolute vibe-inset-0 vibe-flex vibe-items-center vibe-justify-center" style={{ backfaceVisibility: 'hidden' }}>
+    <div
+      className={KEY_BASE + " vibe-relative"}
+      style={{
+        width: Math.round(props.w * 30 + (props.w - 1) * 5) + "px",
+        perspective: 260,
+      }}
+    >
+      {/* 键帽不动，内部内容层翻面；transition 驱动出现/离开的翻面动画 */}
+      <div
+        ref={flipRef}
+        className="vibe-absolute vibe-inset-0"
+        style={{
+          transformStyle: "preserve-3d",
+          transition: "transform 600ms ease-in-out",
+          transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
+        }}
+      >
+        <div
+          className="vibe-absolute vibe-inset-0 vibe-flex vibe-items-center vibe-justify-center"
+          style={{ backfaceVisibility: "hidden" }}
+        >
           {props.label}
         </div>
         <div
           className="vibe-absolute vibe-inset-0 vibe-flex vibe-items-center vibe-justify-center"
-          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', fontSize: 20, lineHeight: 1 }}>
-          {props.mole ?? ''}
+          style={{
+            backfaceVisibility: "hidden",
+            transform: "rotateY(180deg)",
+            fontSize: 20,
+            lineHeight: 1,
+          }}
+        >
+          {shown ?? ""}
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -6,15 +6,17 @@
 
 ```ts
 class MyAdapter extends LlmAdapter {
-  async *stream(options: GenerateOptions): AsyncIterable<StreamChunk> { /* ... */ }
+  async *stream(options: GenerateOptions): AsyncIterable<StreamChunk> {
+    /* ... */
+  }
 }
 
-export const name = 'llm-myprovider'
-export const inject = ['llm']
-export const Config: z<Config> = z.object({ apiKey: z.string(), /* ... */ })
+export const name = "llm-myprovider";
+export const inject = ["llm"];
+export const Config: z<Config> = z.object({ apiKey: z.string() /* ... */ });
 
 export function apply(ctx: Context, config: Config) {
-  ctx.llm.registerAdapter(['my-provider'], new MyAdapter(/* ... */))
+  ctx.llm.registerAdapter(["my-provider"], new MyAdapter(/* ... */));
 }
 ```
 

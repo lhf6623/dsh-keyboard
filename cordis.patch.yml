@@ -9,14 +9,12 @@
 #           shake: light
 #           sound: true
 #           opacity: 0.6
-#           scale: 1.1
 - insert:
     - id: vibe
-      name: 'dsh-vibe'
+      name: "dsh-vibe"
       config:
         enabled: true
         flame: true
         shake: off
         sound: true
         opacity: 0.5
-        scale: 1

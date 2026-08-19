@@ -14,32 +14,32 @@
 
 ## 工具包映射（模型可见名称 → 包）
 
-| 模型可见名称 | 包 |
-| --- | --- |
-| `ask_user_question` | dsh-tool-ask-user |
-| `run_code` | dsh-tools（Code Mode 保留传输） |
-| `exit_plan_mode` | dsh-plan-mode |
-| `bash` | dsh-tool-bash（bash 执行器 seam 的模型消费方） |
-| `pwsh` | dsh-tool-pwsh |
-| `cordis_define` / `cordis_inspect_*` / `cordis_run` / `cordis_stop` / `cordis_undefine` | dsh-tool-cordis（需显式启用） |
-| `bash`（持久 PTY，按所有者隔离） | dsh-tool-bash-persistent |
-| `str_replace_editor` | dsh-tool-str-replace-editor |
-| `edit` / `read` / `read_image` / `write` | dsh-tool-fs（先读后编辑检查在 tool-fs 之下，fs/* 事件实现） |
-| `glob` / `grep` | dsh-tool-fs-search（经 ctx.subprocess spawn 随包 ripgrep） |
-| `terminal_*`（6 个） | dsh-tool-terminal（需选择启用） |
-| `create_goal` / `get_goal` / `update_goal` | dsh-tool-goal |
-| `schedule_create` / `schedule_delete` / `schedule_list` | dsh-schedule（选择启用） |
-| `lsp` | dsh-tool-lsp（无提供方时返回结构化 LSP_UNAVAILABLE，不改 schema） |
-| `ralph` | dsh-tool-ralph |
-| `skill` | dsh-tool-skill |
-| `session_event_read` / `session_event_search` / `session_event_trace` / `session_search` / `session_trace` | dsh-tool-session-query（只读，需选择启用） |
-| `subagent` / `subagent_fork` | dsh-tool-subagent（名称取决于 toolName 配置） |
-| `interrupt_agent` / `list_agents` / `send_message` | dsh-tool-subagent-control |
-| `report` | dsh-tool-subagent-report（按可继续子级注册，非全局） |
-| `job_kill` / `job_list` / `job_output` | dsh-tool-jobs |
-| `todo_write` | dsh-tool-todo（会话所有状态，UI 渲染为检查清单） |
-| `workflow` | dsh-tool-workflow |
-| `web_fetch` / `web_search` | dsh-tool-web（提供方选择在 ctx.web 之后，schema 稳定） |
+| 模型可见名称                                                                                               | 包                                                                |
+| ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `ask_user_question`                                                                                        | dsh-tool-ask-user                                                 |
+| `run_code`                                                                                                 | dsh-tools（Code Mode 保留传输）                                   |
+| `exit_plan_mode`                                                                                           | dsh-plan-mode                                                     |
+| `bash`                                                                                                     | dsh-tool-bash（bash 执行器 seam 的模型消费方）                    |
+| `pwsh`                                                                                                     | dsh-tool-pwsh                                                     |
+| `cordis_define` / `cordis_inspect_*` / `cordis_run` / `cordis_stop` / `cordis_undefine`                    | dsh-tool-cordis（需显式启用）                                     |
+| `bash`（持久 PTY，按所有者隔离）                                                                           | dsh-tool-bash-persistent                                          |
+| `str_replace_editor`                                                                                       | dsh-tool-str-replace-editor                                       |
+| `edit` / `read` / `read_image` / `write`                                                                   | dsh-tool-fs（先读后编辑检查在 tool-fs 之下，fs/* 事件实现）       |
+| `glob` / `grep`                                                                                            | dsh-tool-fs-search（经 ctx.subprocess spawn 随包 ripgrep）        |
+| `terminal_*`（6 个）                                                                                       | dsh-tool-terminal（需选择启用）                                   |
+| `create_goal` / `get_goal` / `update_goal`                                                                 | dsh-tool-goal                                                     |
+| `schedule_create` / `schedule_delete` / `schedule_list`                                                    | dsh-schedule（选择启用）                                          |
+| `lsp`                                                                                                      | dsh-tool-lsp（无提供方时返回结构化 LSP_UNAVAILABLE，不改 schema） |
+| `ralph`                                                                                                    | dsh-tool-ralph                                                    |
+| `skill`                                                                                                    | dsh-tool-skill                                                    |
+| `session_event_read` / `session_event_search` / `session_event_trace` / `session_search` / `session_trace` | dsh-tool-session-query（只读，需选择启用）                        |
+| `subagent` / `subagent_fork`                                                                               | dsh-tool-subagent（名称取决于 toolName 配置）                     |
+| `interrupt_agent` / `list_agents` / `send_message`                                                         | dsh-tool-subagent-control                                         |
+| `report`                                                                                                   | dsh-tool-subagent-report（按可继续子级注册，非全局）              |
+| `job_kill` / `job_list` / `job_output`                                                                     | dsh-tool-jobs                                                     |
+| `todo_write`                                                                                               | dsh-tool-todo（会话所有状态，UI 渲染为检查清单）                  |
+| `workflow`                                                                                                 | dsh-tool-workflow                                                 |
+| `web_fetch` / `web_search`                                                                                 | dsh-tool-web（提供方选择在 ctx.web 之后，schema 稳定）            |
 
 ## 与插件开发的关系
 

@@ -12,51 +12,71 @@
 ## 2. 实现 Definition 与类型化 Chat payload
 
 ```ts
-declare module '@deepseek-ai/dsh-session/types' {
+declare module "@deepseek-ai/dsh-session/types" {
   interface SessionEventMap {
     /** @mode emit */
-    'review/start': ReviewStartData
-    'review/progress': ReviewProgressData
-    'review/end': ReviewEndData
+    "review/start": ReviewStartData;
+    "review/progress": ReviewProgressData;
+    "review/end": ReviewEndData;
   }
 }
 
-declare module '@deepseek-ai/dsh-client-ui-conversation/client' {
-  interface ChatNodeDataMap { 'review-job': ReviewChatData }
+declare module "@deepseek-ai/dsh-client-ui-conversation/client" {
+  interface ChatNodeDataMap {
+    "review-job": ReviewChatData;
+  }
 }
-declare module '@deepseek-ai/dsh-client-runtime/client' {
-  interface ConversationStepDataMap { 'review-job': ReviewChatData }
+declare module "@deepseek-ai/dsh-client-runtime/client" {
+  interface ConversationStepDataMap {
+    "review-job": ReviewChatData;
+  }
 }
 
 const reviewDefinition: ConversationNodeDefinition<ReviewState> = {
-  kind: 'review-job',
-  target: 'chat',
-  match: (event) => {                      // 身份提取器，不是 fold：只收当前事件
-    if (event.type === 'review/start') return { id: String(event.data.reviewId), role: 'start' }
-    if (event.type === 'review/progress' || event.type === 'review/end') {
-      return { id: String(event.data.reviewId), role: 'update' }
+  kind: "review-job",
+  target: "chat",
+  match: (event) => {
+    // 身份提取器，不是 fold：只收当前事件
+    if (event.type === "review/start")
+      return { id: String(event.data.reviewId), role: "start" };
+    if (event.type === "review/progress" || event.type === "review/end") {
+      return { id: String(event.data.reviewId), role: "update" };
     }
-    return null
+    return null;
   },
-  start: (_context, match) => ({ /* 从 start 事件构造 State */ }),
-  update: (context, match) => ({ /* fold 一个 Match 进 State，确定性可回放 */ }),
-  publication: match => match.event.type === 'review/progress' ? 'animation-frame' : 'immediate',
-  buildLocationData: (context, scope) => { /* 发布到引擎拥有的 Turn/Step 数据，或 null */ },
-  buildViewNode: (context) => ({ /* key/kind/id/target/anchorSeq/location/visibility/data */ }),
+  start: (_context, match) => ({/* 从 start 事件构造 State */}),
+  update: (context, match) => ({/* fold 一个 Match 进 State，确定性可回放 */}),
+  publication: (match) =>
+    match.event.type === "review/progress" ? "animation-frame" : "immediate",
+  buildLocationData: (context, scope) => {
+    /* 发布到引擎拥有的 Turn/Step 数据，或 null */
+  },
+  buildViewNode: (context) => ({
+    /* key/kind/id/target/anchorSeq/location/visibility/data */
+  }),
+};
+
+function ReviewNodeView({ node }: ChatNodeViewProps<"review-job">) {
+  return createElement(
+    "p",
+    null,
+    node.data.summary ?? `${node.data.title}: ${node.data.completed}%`,
+  );
 }
 
-function ReviewNodeView({ node }: ChatNodeViewProps<'review-job'>) {
-  return createElement('p', null, node.data.summary ?? `${node.data.title}: ${node.data.completed}%`)
-}
-
-export const inject = ['conversationEvents', 'slots']
+export const inject = ["conversationEvents", "slots"];
 
 export function apply(ctx: ClientContext): void {
-  ctx.conversationEvents.register(reviewDefinition)
-  ctx.slots.inject('conversation.chat.node', () => ctx.slots.register({
-    name: 'conversation.chat.node',
-    key: 'review-job',
-  }, ReviewNodeView))
+  ctx.conversationEvents.register(reviewDefinition);
+  ctx.slots.inject("conversation.chat.node", () =>
+    ctx.slots.register(
+      {
+        name: "conversation.chat.node",
+        key: "review-job",
+      },
+      ReviewNodeView,
+    ),
+  );
 }
 ```
 
@@ -73,11 +93,11 @@ export function apply(ctx: ClientContext): void {
 
 ## 4. 三条摄入路径
 
-| 路径 | 引擎工作 | Definition 可观察行为 |
-| --- | --- | --- |
+| 路径                              | 引擎工作                                                                          | Definition 可观察行为                                                         |
+| --------------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | replace（open/resync/gap repair） | 重建已加载窗口，每条事件对每个 Definition 匹配一次，回放每个已有 start 的 Context | 先 `start`，再按 seq 升序 `update`；只有 update 的 pending Context 仍无 State |
-| prepend 更早历史 | 只匹配新增更早事件，按 `(kind, id)` 合并，只重放受影响 Context 与依赖 | 新发现的 start 激活已收集 update；Location/前序变化可能重跑 Context |
-| append 实时事件 | 每个 Definition 调一次 `match`，按 key 查 Context，只更新该 Context | start 之后匹配事件执行一次 `update` + 一次发布；不扫描已有 Context |
+| prepend 更早历史                  | 只匹配新增更早事件，按 `(kind, id)` 合并，只重放受影响 Context 与依赖             | 新发现的 start 激活已收集 update；Location/前序变化可能重跑 Context           |
+| append 实时事件                   | 每个 Definition 调一次 `match`，按 key 查 Context，只更新该 Context               | start 之后匹配事件执行一次 `update` + 一次发布；不扫描已有 Context            |
 
 注册 D 个 Definition 时，一条新事件做 D 次仅当前事件匹配，命中后 Context key 查询是常数时间。**append 热路径不得遍历完整事件窗口/所有 Context/`context.matches`/已渲染 Node 集合**：累计事实进 State，同 Turn/Step 共享信息进 Location data，有索引的前序依赖用 `reader.previous()`。
 

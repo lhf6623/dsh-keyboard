@@ -15,32 +15,38 @@
 ## Plugin 类型
 
 ```ts
-type Plugin<T> = Plugin.Function<T> | Plugin.Constructor<T> | Plugin.Object<T>
+type Plugin<T> = Plugin.Function<T> | Plugin.Constructor<T> | Plugin.Object<T>;
 
 namespace Plugin {
   /** 插件入口共有的元数据 */
   interface Base<T> {
     /** fiber 诊断与 logger 名用的显示名 */
-    name?: string
+    name?: string;
     /** 插件启动前校验 config 的 standard-schema 验证器 */
-    Config?: StandardSchemaV1<any, T>
+    Config?: StandardSchemaV1<any, T>;
     /** 必需服务；全部可用时才加载 */
-    inject?: Inject
+    inject?: Inject;
     /** 插件提供的服务名（Service 与 loader 读取） */
-    provide?: string | string[]
+    provide?: string | string[];
     /** 插件声明消费其拦截配置的服务名 */
-    intercept?: Dict<boolean>
+    intercept?: Dict<boolean>;
   }
-  interface Function<T> extends Base<T> { (ctx: Context, config: T): any }
-  interface Constructor<T> extends Base<T> { new (ctx: Context, config: T): any }
-  interface Object<T> extends Base<T> { apply(ctx: Context, config: T): any }
+  interface Function<T> extends Base<T> {
+    (ctx: Context, config: T): any;
+  }
+  interface Constructor<T> extends Base<T> {
+    new (ctx: Context, config: T): any;
+  }
+  interface Object<T> extends Base<T> {
+    apply(ctx: Context, config: T): any;
+  }
 
   /** 共享可变注册表记录：每个 ctx.plugin() 调用的所有 fiber 属于一个 runtime */
   interface Runtime {
-    name?: string
-    fibers: DisposableList<Fiber>   // 此插件的每个存活 fiber
-    callback: globalThis.Function   // 所有 fiber 共享的可执行入口（注册表身份键）
-    Config?: StandardSchemaV1
+    name?: string;
+    fibers: DisposableList<Fiber>; // 此插件的每个存活 fiber
+    callback: globalThis.Function; // 所有 fiber 共享的可执行入口（注册表身份键）
+    Config?: StandardSchemaV1;
   }
 }
 ```
@@ -48,7 +54,7 @@ namespace Plugin {
 ## Inject 类型
 
 ```ts
-type Inject<M> = (keyof M)[] | { [K in keyof M]?: M[K] }
+type Inject<M> = (keyof M)[] | { [K in keyof M]?: M[K] };
 ```
 
 - 数组形式：请求服务，不带拦截配置。

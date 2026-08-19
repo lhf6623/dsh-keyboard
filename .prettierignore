@@ -1,0 +1,8 @@
+# 构建产物（lib/ 随仓库提交，但由 Vite 生成，不格式化）
+lib
+# pnpm 锁文件（保持 pnpm 原生格式）
+pnpm-lock.yaml
+# 本地缓存与抓取资料
+.pnpm-store
+.dsh
+node_modules

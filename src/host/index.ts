@@ -1,16 +1,19 @@
-import z from '@deepseek-ai/schemastery'
-import { installSettingsSection, settingsNamespace } from '@deepseek-ai/dsh-settings'
+import z from "@deepseek-ai/schemastery";
+import {
+  installSettingsSection,
+  settingsNamespace,
+} from "@deepseek-ai/dsh-settings";
 
-export const name = 'dsh-vibe'
+export const name = "dsh-vibe";
 
 /** Settings namespace owned by dsh-vibe（浏览器侧经 settingsScope 读写）。 */
-export const VIBE_SETTINGS_NAMESPACE = settingsNamespace('dsh-vibe')
+export const VIBE_SETTINGS_NAMESPACE = settingsNamespace("dsh-vibe");
 
-export const SHAKE_LEVELS = ['off', 'light', 'medium', 'strong'] as const
-export type ShakeLevel = (typeof SHAKE_LEVELS)[number]
+export const SHAKE_LEVELS = ["off", "light", "medium", "strong"] as const;
+export type ShakeLevel = (typeof SHAKE_LEVELS)[number];
 
-export const MOLE_FREQUENCIES = ['low', 'medium', 'high'] as const
-export type MoleFrequency = (typeof MOLE_FREQUENCIES)[number]
+export const MOLE_FREQUENCIES = ["low", "medium", "high"] as const;
+export type MoleFrequency = (typeof MOLE_FREQUENCIES)[number];
 
 /**
  * 插件配置（配置式写法，见 cordis-tutorial/05-config）：
@@ -21,93 +24,97 @@ export type MoleFrequency = (typeof MOLE_FREQUENCIES)[number]
  * entry 配置层叠在用户文档之下，解析值 = schema 默认 < cordis.yml entry < 用户覆盖。
  */
 export interface Config {
-  enabled: boolean
-  opacity: number
-  scale: number
-  mole: boolean
-  moleFrequency: MoleFrequency
-  feedback: boolean
-  flame: boolean
-  shake: ShakeLevel
-  response: boolean
-  pageShake: boolean
-  pageShakeLevel: ShakeLevel
-  sound: boolean
+  enabled: boolean;
+  opacity: number;
+  moleFrequency: MoleFrequency;
+  molePoolSize: number;
+  feedback: boolean;
+  flame: boolean;
+  shake: ShakeLevel;
+  response: boolean;
+  pageShake: boolean;
+  pageShakeLevel: ShakeLevel;
+  sound: boolean;
 }
 
 export const Config: z<Config> = z.object({
   enabled: z.boolean().default(true),
   opacity: z.number().min(0.1).max(1).default(0.5),
-  scale: z.number().min(0.6).max(1.5).default(1),
-  // 打地鼠：随机按键冒 emoji（纯装饰）
-  mole: z.boolean().default(false),
-  moleFrequency: z.union([...MOLE_FREQUENCIES]).default('medium'),
+  moleFrequency: z.union([...MOLE_FREQUENCIES]).default("medium"),
+  // 动物池大小：自动翻与按下翻共用，池满时新动物顶掉最老的一只
+  molePoolSize: z.number().min(1).max(10).default(6),
   // 组总开关：打字反馈（火焰 + 输入抖动）、回答反馈（整页抖动 + 提示音）
   feedback: z.boolean().default(true),
   flame: z.boolean().default(true),
-  shake: z.union([...SHAKE_LEVELS]).default('off'),
+  shake: z.union([...SHAKE_LEVELS]).default("off"),
   response: z.boolean().default(true),
   pageShake: z.boolean().default(true),
   // 回答后整页抖动的独立强度档位（不跟随输入抖动）
-  pageShakeLevel: z.union([...SHAKE_LEVELS]).default('off'),
+  pageShakeLevel: z.union([...SHAKE_LEVELS]).default("off"),
   sound: z.boolean().default(true),
-})
+});
 
 function sseData(frame: { type: string }): string {
-  return 'data: ' + JSON.stringify(frame) + '\n\n'
+  return "data: " + JSON.stringify(frame) + "\n\n";
 }
 
 export default {
-  inject: ['webServer'],
+  inject: ["webServer"],
   apply(ctx: any, config: Config) {
     // 配置来源：默认 cordis.yml entry；settings 用户层写入后切到解析值。
-    let source: () => Config = () => config
+    let source: () => Config = () => config;
     installSettingsSection(ctx, VIBE_SETTINGS_NAMESPACE, Config, config, {
-      setSource: (get: () => Config) => { source = get },
+      setSource: (get: () => Config) => {
+        source = get;
+      },
       onChange: () => {
         // 宿主目前不消费配置值（渲染在浏览器侧）；保持来源最新即可。
-        void source()
+        void source();
       },
-    })
+    });
 
-    const connections = new Set<any>()
+    const connections = new Set<any>();
 
     function broadcast(type: string) {
-      const line = sseData({ type })
+      const line = sseData({ type });
       for (const res of connections) {
-        try { res.write(line) } catch {}
+        try {
+          res.write(line);
+        } catch {}
       }
     }
 
-    ctx.on('session/event', (_session: any, event: any) => {
-      if (event && event.type === 'turn/end') broadcast('answer-done')
-    })
+    ctx.on("session/event", (_session: any, event: any) => {
+      if (event && event.type === "turn/end") broadcast("answer-done");
+    });
 
     ctx.effect(() => {
       const disposeRoute = ctx.webServer.register({
-        kind: 'exact',
-        path: '/api/vibe-events',
+        kind: "exact",
+        path: "/api/vibe-events",
         handler: (req: any, res: any) => {
-          if (req.method !== 'GET' && req.method !== 'HEAD') {
-            res.writeHead(405)
-            res.end()
-            return
+          if (req.method !== "GET" && req.method !== "HEAD") {
+            res.writeHead(405);
+            res.end();
+            return;
           }
           res.writeHead(200, {
-            'content-type': 'text/event-stream',
-            'cache-control': 'no-cache',
-            'connection': 'keep-alive',
-          })
-          res.write(': connected\n\n')
-          connections.add(res)
-          res.on('close', () => { connections.delete(res) })
+            "content-type": "text/event-stream",
+            "cache-control": "no-cache",
+            connection: "keep-alive",
+          });
+          res.write(": connected\n\n");
+          connections.add(res);
+          res.on("close", () => {
+            connections.delete(res);
+          });
         },
-      })
+      });
       return () => {
-        disposeRoute()
-        for (const res of connections) res.destroy()
-        connections.clear()
-      }
-    })
+        disposeRoute();
+        for (const res of connections) res.destroy();
+        connections.clear();
+      };
+    });
   },
-}
+};

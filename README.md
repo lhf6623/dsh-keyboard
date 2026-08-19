@@ -4,7 +4,8 @@ DeepSeek Harness (DSH) 输入氛围插件：在输入框上方展示一块 87 �
 
 ## ✨ 功能
 
-- **键盘可视化**：87 键 TKL 布局，按物理键实时高亮（区分左右 Shift / Alt / Ctrl / Cmd），带平滑过渡动画。
+- **键盘可视化**：87 键 TKL 布局，按键按下时翻面露出随机动物（与小动物共用动物池，池满顶掉最老一只），带平滑翻面动画。
+- **小动物**：按频率自动翻出随机动物并驻留；按下按键即刻在按下的键上翻出（加速一次自动翻）；池满时新动物顶掉最老的一只。
 - **鼠标可视化**：左 / 中 / 右键与滚轮实时高亮，与方向键对齐布局。
 - **打字火焰**：在输入框文字光标处喷出火焰粒子（新增、删除、粘贴、中文输入都会触发；系统开启「减弱动态效果」时自动关闭）。
 - **输入抖动**：每次输入给输入框一个轻微的水平震动，强度分「关 / 轻 / 中 / 强」。
@@ -24,11 +25,11 @@ dsh plugin add github:lhf6623/dsh-vibe
 
 在 **设置 → 氛围** 中调整，改动即时生效并保存到本地：
 
-| 分组 | 设置项 |
-| --- | --- |
-| 键盘外观 | 显示键盘 · 透明度 · 缩放 |
-| 打字反馈 | 打字火焰 · 输入抖动（关/轻/中/强） |
-| 回答反馈 | 回答后整页抖动 · 整页抖动强度 · 回答提示音 |
+| 分组     | 设置项                                                |
+| -------- | ----------------------------------------------------- |
+| 键盘外观 | 显示键盘 · 透明度 · 小动物（翻出频率 / 同时显示数量） |
+| 打字反馈 | 打字火焰 · 输入抖动（关/轻/中/强）                    |
+| 回答反馈 | 回答后整页抖动 · 整页抖动强度 · 回答提示音            |
 
 ### cordis.yml（部署级默认）
 
@@ -36,20 +37,19 @@ dsh plugin add github:lhf6623/dsh-vibe
 
 ```yaml
 - id: vibe
-  name: 'dsh-vibe'
+  name: "dsh-vibe"
   config:
-    enabled: true        # 键盘外观组总开关
-    opacity: 0.5         # 键盘透明度
-    scale: 1             # 键盘缩放
-    mole: false          # 打地鼠（随机按键冒 emoji）
-    moleFrequency: medium# 冒头频率（low / medium / high）
-    feedback: true       # 打字反馈组总开关
-    flame: true          # 打字火焰
-    shake: off           # 输入抖动（off / light / medium / strong）
-    response: true       # 回答反馈组总开关
-    pageShake: true      # 回答后整页抖动
-    pageShakeLevel: off  # 整页抖动强度（独立于输入抖动）
-    sound: true          # 回答提示音
+    enabled: true # 键盘外观组总开关
+    opacity: 0.5 # 键盘透明度
+    moleFrequency: medium # 翻出频率（low / medium / high）
+    molePoolSize: 6 # 同时显示数量上限（自动翻与按下翻共用，1-10）
+    feedback: true # 打字反馈组总开关
+    flame: true # 打字火焰
+    shake: off # 输入抖动（off / light / medium / strong）
+    response: true # 回答反馈组总开关
+    pageShake: true # 回答后整页抖动
+    pageShakeLevel: off # 整页抖动强度（独立于输入抖动）
+    sound: true # 回答提示音
 ```
 
 ## 📝 版本记录

@@ -4,9 +4,8 @@ export type MoleFrequency = 'low' | 'medium' | 'high'
 export interface VibeConfig {
   enabled: boolean
   opacity: number
-  scale: number
-  mole: boolean
   moleFrequency: MoleFrequency
+  molePoolSize: number
   feedback: boolean
   flame: boolean
   shake: ShakeLevel
@@ -17,8 +16,8 @@ export interface VibeConfig {
 }
 
 export const DEFAULTS: VibeConfig = {
-  enabled: true, opacity: 0.5, scale: 1,
-  mole: false, moleFrequency: 'medium',
+  enabled: true, opacity: 0.5,
+  moleFrequency: 'medium', molePoolSize: 6,
   feedback: true, flame: true, shake: 'off',
   response: true, pageShake: true, pageShakeLevel: 'off', sound: true,
 } 
@@ -39,9 +38,8 @@ export function normalizeConfig(c: unknown): VibeConfig {
   return {
     enabled: o.enabled !== false,
     opacity: clamp(o.opacity, 0.1, 1, 0.5),
-    scale: clamp(o.scale, 0.6, 1.5, 1),
-    mole: o.mole === true,
     moleFrequency: freq(o.moleFrequency),
+    molePoolSize: Math.round(clamp(o.molePoolSize, 1, 10, 6)),
     feedback: o.feedback !== false,
     flame: o.flame !== false,
     shake: level(o.shake),

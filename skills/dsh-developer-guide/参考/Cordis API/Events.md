@@ -6,13 +6,13 @@
 
 ## 分发方法
 
-| 方法 | 语义 | 返回值 |
-| --- | --- | --- |
-| `ctx.emit(name, ...args)` | 同步分发，忽略监听器返回值 | void |
-| `ctx.parallel(name, ...args)` | 并发运行所有监听器 | 所有监听器 settle 后兑现的 Promise |
-| `ctx.serial(name, ...args)` | 依次 await，直到一个提前终止 | 第一个 bail 值（非 null/false/undefined）的 Promise |
-| `ctx.bail(name, ...args)` | 同步依次调用，直到一个提前终止 | 第一个 bail 值 |
-| `ctx.waterfall(name, ...args)` | 最后一个参数是 `next` continuation；每个监听器包装调用链其余部分，调用 `next()` 执行下一个（最终内置行为），不调用即否决 | 最外层监听器的返回值 |
+| 方法                           | 语义                                                                                                                     | 返回值                                              |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------- |
+| `ctx.emit(name, ...args)`      | 同步分发，忽略监听器返回值                                                                                               | void                                                |
+| `ctx.parallel(name, ...args)`  | 并发运行所有监听器                                                                                                       | 所有监听器 settle 后兑现的 Promise                  |
+| `ctx.serial(name, ...args)`    | 依次 await，直到一个提前终止                                                                                             | 第一个 bail 值（非 null/false/undefined）的 Promise |
+| `ctx.bail(name, ...args)`      | 同步依次调用，直到一个提前终止                                                                                           | 第一个 bail 值                                      |
+| `ctx.waterfall(name, ...args)` | 最后一个参数是 `next` continuation；每个监听器包装调用链其余部分，调用 `next()` 执行下一个（最终内置行为），不调用即否决 | 最外层监听器的返回值                                |
 
 `DispatchMode = 'emit' | 'parallel' | 'serial' | 'bail' | 'waterfall'`。
 
@@ -28,9 +28,9 @@ ctx.once(name, listener, options?)   // 首次调用后自行注销
 ```ts
 interface EventOptions {
   /** 插入到同事件既有监听器之前 */
-  prepend?: boolean
+  prepend?: boolean;
   /** 无视上下文过滤器检查接收事件 */
-  global?: boolean
+  global?: boolean;
 }
 ```
 

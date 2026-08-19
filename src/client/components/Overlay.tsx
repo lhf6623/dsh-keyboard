@@ -1,35 +1,39 @@
-import * as React from 'react'
-import { useConfig } from '../hooks/useConfig'
-import { useKeyState } from '../hooks/useKeyState'
-import { useMouseState } from '../hooks/useMouseState'
-import { useComposerPosition } from '../hooks/useComposerPosition'
-import { KeyboardMain } from './keyboard/KeyboardMain'
-import { ArrowView } from './keyboard/ArrowView'
-import { MouseView } from './keyboard/MouseView'
+import * as React from "react";
+import { useConfig } from "../hooks/useConfig";
+import { useMouseState } from "../hooks/useMouseState";
+import { useComposerPosition } from "../hooks/useComposerPosition";
+import { useKeyAnimals } from "./keyboard/useKeyAnimals";
+import { KeyboardMain } from "./keyboard/KeyboardMain";
+import { ArrowView } from "./keyboard/ArrowView";
+import { MouseView } from "./keyboard/MouseView";
 
 export function Overlay() {
-  const cfg = useConfig()
-  const pressed = useKeyState()
-  const mouse = useMouseState()
-  const { bottom, left } = useComposerPosition()
+  const cfg = useConfig();
+  const mouse = useMouseState();
+  const { bottom, left } = useComposerPosition();
+  const animals = useKeyAnimals();
 
-  const rootStyle: React.CSSProperties = { bottom: bottom + 'px' }
-  if (left !== null) rootStyle.left = left + 'px'
-  if (!cfg.enabled) rootStyle.display = 'none'
-  rootStyle.opacity = cfg.opacity
-  rootStyle.transform = 'translateX(-50%) scale(' + cfg.scale + ')'
+  const rootStyle: React.CSSProperties = { bottom: bottom + "px" };
+  if (left !== null) rootStyle.left = left + "px";
+  if (!cfg.enabled) rootStyle.display = "none";
+  rootStyle.opacity = cfg.opacity;
+  rootStyle.transform = "translateX(-50%)";
 
-  const keyboard = left !== null ? (
-    <div className="vibe-fixed vibe-z-40 vibe-pointer-events-none vibe-origin-[50%_100%] vibe-transition-[left,bottom] vibe-duration-300 [@media(max-width:920px)]:vibe-hidden motion-reduce:vibe-transition-none" style={rootStyle}>
-      <div className="vibe-flex vibe-items-stretch vibe-gap-[3px]">
-        <KeyboardMain pressed={pressed} />
-        <div className="vibe-flex vibe-flex-col vibe-justify-between vibe-items-center">
-          <MouseView mouse={mouse} />
-          <ArrowView pressed={pressed} />
+  const keyboard =
+    left !== null ? (
+      <div
+        className="vibe-fixed vibe-z-40 vibe-pointer-events-none vibe-origin-[50%_100%] vibe-transition-[left,bottom] vibe-duration-300 [@media(max-width:920px)]:vibe-hidden motion-reduce:vibe-transition-none"
+        style={rootStyle}
+      >
+        <div className="vibe-flex vibe-items-stretch vibe-gap-[3px]">
+          <KeyboardMain animals={animals} />
+          <div className="vibe-flex vibe-flex-col vibe-justify-between vibe-items-center">
+            <MouseView mouse={mouse} />
+            <ArrowView animals={animals} />
+          </div>
         </div>
       </div>
-    </div>
-  ) : null
+    ) : null;
 
-  return keyboard
+  return keyboard;
 }

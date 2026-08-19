@@ -5,29 +5,31 @@
 ## 最小形态
 
 ```ts
-import type { Context } from '@deepseek-ai/cordis'
-import { defineTool } from '@deepseek-ai/dsh-tools'
+import type { Context } from "@deepseek-ai/cordis";
+import { defineTool } from "@deepseek-ai/dsh-tools";
 
-export const name = 'my-tool'
-export const inject = ['tools']
+export const name = "my-tool";
+export const inject = ["tools"];
 
 export function apply(ctx: Context) {
-  ctx.tools.register(defineTool({
-    name: 'read_file',
-    description: 'Read a file from disk.',          // 模型看到的内容
-    parameters: {
-      path: { type: 'string', required: true, description: 'Absolute path' },
-      limit: { type: 'number' },                     // 默认可选
-    },
-    output: {
-      schema: { type: 'string' },
-      render: (_args, value) => [{ type: 'text', text: value }],
-    },
-    async execute(args, exec) {
-      // args 由 schema 推导类型；exec 携带不可变身份 + token，signal 是操作字段
-      return readFile(args.path, { encoding: 'utf8', signal: exec.signal })
-    },
-  }))
+  ctx.tools.register(
+    defineTool({
+      name: "read_file",
+      description: "Read a file from disk.", // 模型看到的内容
+      parameters: {
+        path: { type: "string", required: true, description: "Absolute path" },
+        limit: { type: "number" }, // 默认可选
+      },
+      output: {
+        schema: { type: "string" },
+        render: (_args, value) => [{ type: "text", text: value }],
+      },
+      async execute(args, exec) {
+        // args 由 schema 推导类型；exec 携带不可变身份 + token，signal 是操作字段
+        return readFile(args.path, { encoding: "utf8", signal: exec.signal });
+      },
+    }),
+  );
 }
 ```
 
