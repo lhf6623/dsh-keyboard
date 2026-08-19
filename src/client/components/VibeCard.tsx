@@ -1,8 +1,11 @@
 import * as React from 'react'
-import { getConfig, setConfig, subscribeConfig, VibeConfig, ShakeLevel } from './config'
+import { setConfig, VibeConfig, ShakeLevel, MoleFrequency } from '../lib/config'
+import { useConfig } from '../hooks/useConfig'
 
 const SHAKE_LABELS: Record<ShakeLevel, string> = { off: '关', light: '轻', medium: '中', strong: '强' }
 const SHAKE_LEVELS: ShakeLevel[] = ['off', 'light', 'medium', 'strong']
+const MOLE_LABELS: Record<MoleFrequency, string> = { low: '低', medium: '中', high: '高' }
+const MOLE_FREQUENCIES: MoleFrequency[] = ['low', 'medium', 'high']
 
 // —— 系统设置面板行模板（对齐 DSH 通用设置）——
 const ROW = [
@@ -46,11 +49,7 @@ function Row(props: { title: string; desc?: string; last?: boolean; indent?: boo
 
 /** 独立「氛围」设置标签（settings.section）：每组 = 标题行 + 主开关 + 条件子项。 */
 export function VibeCard() {
-  const [cfg, setCfg] = React.useState<VibeConfig>(getConfig())
-  React.useEffect(() => {
-    setCfg(getConfig())
-    return subscribeConfig(setCfg)
-  }, [])
+  const cfg = useConfig()
   const update = (patch: Partial<VibeConfig>) => setConfig(patch)
 
   return (
@@ -66,10 +65,26 @@ export function VibeCard() {
             <input className={RANGE} type="range" min="0.1" max="1" step="0.05" value={cfg.opacity} onChange={(e) => update({ opacity: parseFloat(e.target.value) })} />
             <span className={VALUE}>{Math.round(cfg.opacity * 100)}%</span>
           </Row>
-          <Row title="键盘缩放" last indent>
+          <Row title="键盘缩放" indent>
             <input className={RANGE} type="range" min="0.6" max="1.5" step="0.05" value={cfg.scale} onChange={(e) => update({ scale: parseFloat(e.target.value) })} />
             <span className={VALUE}>{Math.round(cfg.scale * 100)}%</span>
           </Row>
+          <Row title="打地鼠" indent>
+            <input className={CHECKBOX} type="checkbox" checked={cfg.mole} onChange={(e) => update({ mole: e.target.checked })} />
+          </Row>
+          {cfg.mole && (
+            <Row title="冒头频率" last indent>
+              <div className="vibe-inline-flex vibe-gap-1.5">
+                {MOLE_FREQUENCIES.map((f) => (
+                  <button key={f} type="button"
+                    className={PILL + ' ' + (cfg.moleFrequency === f ? PILL_ON : PILL_OFF)}
+                    onClick={() => update({ moleFrequency: f })}>
+                    {MOLE_LABELS[f]}
+                  </button>
+                ))}
+              </div>
+            </Row>
+          )}
         </>
       )}
 

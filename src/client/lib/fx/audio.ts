@@ -1,4 +1,6 @@
-import { getConfig } from '../settings/config'
+import { getConfig } from '../config'
+import { onKeyDown } from '../events/keyboard'
+import { onMouseDown } from '../events/mouse'
 
 let audioCtx: AudioContext | null = null
 
@@ -38,4 +40,14 @@ export function playAnswerSound(): void {
     osc.start(now)
     osc.stop(now + 0.55)
   } catch {}
+}
+
+/**
+ * 页面级效果：首个键鼠手势解锁 AudioContext（浏览器自动播放限制）。
+ * 订阅键盘/鼠标事件源，与其他按键/鼠标消费者互不知晓。返回 disposer。
+ */
+export function attachAudioPrime(): () => void {
+  const offKey = onKeyDown(() => primeAudio())
+  const offMouse = onMouseDown(() => primeAudio())
+  return () => { offKey(); offMouse() }
 }

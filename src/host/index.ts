@@ -9,6 +9,9 @@ export const VIBE_SETTINGS_NAMESPACE = settingsNamespace('dsh-vibe')
 export const SHAKE_LEVELS = ['off', 'light', 'medium', 'strong'] as const
 export type ShakeLevel = (typeof SHAKE_LEVELS)[number]
 
+export const MOLE_FREQUENCIES = ['low', 'medium', 'high'] as const
+export type MoleFrequency = (typeof MOLE_FREQUENCIES)[number]
+
 /**
  * 插件配置（配置式写法，见 cordis-tutorial/05-config）：
  * - 导出 Config 接口 + 同名 Schemastery schema，默认值写在 schema 里；
@@ -19,6 +22,10 @@ export type ShakeLevel = (typeof SHAKE_LEVELS)[number]
  */
 export interface Config {
   enabled: boolean
+  opacity: number
+  scale: number
+  mole: boolean
+  moleFrequency: MoleFrequency
   feedback: boolean
   flame: boolean
   shake: ShakeLevel
@@ -26,12 +33,15 @@ export interface Config {
   pageShake: boolean
   pageShakeLevel: ShakeLevel
   sound: boolean
-  opacity: number
-  scale: number
 }
 
 export const Config: z<Config> = z.object({
   enabled: z.boolean().default(true),
+  opacity: z.number().min(0.1).max(1).default(0.5),
+  scale: z.number().min(0.6).max(1.5).default(1),
+  // 打地鼠：随机按键冒 emoji（纯装饰）
+  mole: z.boolean().default(false),
+  moleFrequency: z.union([...MOLE_FREQUENCIES]).default('medium'),
   // 组总开关：打字反馈（火焰 + 输入抖动）、回答反馈（整页抖动 + 提示音）
   feedback: z.boolean().default(true),
   flame: z.boolean().default(true),
@@ -41,8 +51,6 @@ export const Config: z<Config> = z.object({
   // 回答后整页抖动的独立强度档位（不跟随输入抖动）
   pageShakeLevel: z.union([...SHAKE_LEVELS]).default('off'),
   sound: z.boolean().default(true),
-  opacity: z.number().min(0.1).max(1).default(0.5),
-  scale: z.number().min(0.6).max(1.5).default(1),
 })
 
 function sseData(frame: { type: string }): string {

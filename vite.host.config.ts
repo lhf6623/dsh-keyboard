@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 // 宿主：Vite lib mode（ESM，harness 内部包 external）
 export default defineConfig({
   build: {
-    lib: { entry: 'src/index.ts', formats: ['es'], fileName: () => 'index.js' },
+    lib: { entry: 'src/host/index.ts', formats: ['es'], fileName: () => 'index.js' },
     outDir: 'lib',
     emptyOutDir: false,
     rollupOptions: {

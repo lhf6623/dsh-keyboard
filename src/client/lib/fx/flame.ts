@@ -1,5 +1,7 @@
 import { reducedMotion } from './motion'
-import { getConfig } from '../settings/config'
+import { getConfig } from '../config'
+import { computeCaretPosition } from '../caret'
+import { onComposerInput } from '../events/composer-input'
 
 interface Particle {
   x: number
@@ -16,12 +18,12 @@ let ctx: CanvasRenderingContext2D | null = null
 let particles: Particle[] = []
 let raf: number | null = null
 
-export function initFlame(c: HTMLCanvasElement | null): void {
+function initFlame(c: HTMLCanvasElement | null): void {
   canvas = c
   ctx = c ? c.getContext('2d') : null
 }
 
-export function spawnFlame(x: number, y: number): void {
+function spawnFlame(x: number, y: number): void {
   if (reducedMotion() || getConfig().feedback === false || getConfig().flame === false) return
   if (!ctx) return
   const n = 16
@@ -71,9 +73,34 @@ function frame(): void {
   if (particles.length > 0) raf = requestAnimationFrame(frame)
 }
 
-export function stopFlame(): void {
+function stopFlame(): void {
   if (raf !== null) { cancelAnimationFrame(raf); raf = null }
   particles = []
   canvas = null
   ctx = null
+}
+
+const CANVAS_CLASS = 'vibe-fixed vibe-top-0 vibe-left-0 vibe-w-full vibe-h-full vibe-z-45 vibe-pointer-events-none'
+
+/**
+ * 页面级打字特效（无 React 组件）：自建全屏火焰画布挂到 body，
+ * 订阅 composer 输入事件（见 events/composer-input.ts）——在文字光标处喷火焰粒子。
+ * 返回 disposer，经 client 入口的 ctx.effect 挂载并自动清理。
+ */
+export function attachFlame(): () => void {
+  const c = document.createElement('canvas')
+  c.className = CANVAS_CLASS
+  document.body.appendChild(c)
+  initFlame(c)
+
+  const off = onComposerInput((t) => {
+    const pos = computeCaretPosition(t)
+    spawnFlame(pos.x, pos.y)
+  })
+
+  return () => {
+    off()
+    stopFlame()
+    c.remove()
+  }
 }

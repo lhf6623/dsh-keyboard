@@ -5,7 +5,7 @@ import { unocssCssPlugin, moduleLoaderWrapPlugin } from './vite.shared.ts'
 export default defineConfig({
   plugins: [unocssCssPlugin(), moduleLoaderWrapPlugin()],
   build: {
-    lib: { entry: 'src/client.tsx', formats: ['cjs'], fileName: () => 'client.cjs.js' },
+    lib: { entry: 'src/client/index.tsx', formats: ['cjs'], fileName: () => 'client.cjs.js' },
     outDir: 'lib',
     emptyOutDir: false,
     cssCodeSplit: false,

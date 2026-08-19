@@ -1,5 +1,6 @@
 import { reducedMotion } from './motion'
-import { getConfig } from '../settings/config'
+import { getConfig } from '../config'
+import { onComposerInput } from '../events/composer-input'
 
 let shakeAnim: Animation | null = null
 let answerShakeAnim: Animation | null = null
@@ -15,7 +16,7 @@ function keyframes(amp: number): Keyframe[] {
   ]
 }
 
-export function triggerShake(card: Element | null): void {
+function triggerShake(card: Element | null): void {
   const cfg = getConfig()
   // 打字反馈组总开关：关闭（feedback=false）时输入抖动也停
   if (cfg.feedback === false || cfg.flame === false || cfg.shake === 'off' || reducedMotion()) return
@@ -40,7 +41,23 @@ export function shakePage(): void {
   answerShakeAnim = (target as any).animate(keyframes(amp), { duration: dur, easing: 'ease-out' })
 }
 
-export function stopShake(): void {
+function stopShake(): void {
   if (shakeAnim) { shakeAnim.cancel(); shakeAnim = null }
   if (answerShakeAnim) { answerShakeAnim.cancel(); answerShakeAnim = null }
+}
+
+/**
+ * 页面级打字特效（无 React 组件）：输入抖动——订阅 composer 输入事件
+ * （见 events/composer-input.ts），给输入框一个横向微震（开关/强度按配置，见 triggerShake）。
+ * 返回 disposer，经 client 入口的 ctx.effect 挂载并自动清理。
+ */
+export function attachInputShake(): () => void {
+  const off = onComposerInput((t) => {
+    triggerShake(t.closest('[data-composer-card]'))
+  })
+
+  return () => {
+    off()
+    stopShake()
+  }
 }

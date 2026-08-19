@@ -1,8 +1,9 @@
-import { Overlay } from './ui/overlay'
-import { VibeCard } from './settings/settings'
-import { playAnswerSound } from './fx/audio'
-import { shakePage } from './fx/shake'
-import { attachSettings, normalizeConfig } from './settings/config'
+import { Overlay } from './components/Overlay'
+import { VibeCard } from './components/VibeCard'
+import { playAnswerSound, attachAudioPrime } from './lib/fx/audio'
+import { shakePage, attachInputShake } from './lib/fx/shake'
+import { attachFlame } from './lib/fx/flame'
+import { attachSettings, normalizeConfig } from './lib/config'
 
 export const inject = ['slots', 'connection', 'remote', 'settingsScope']
 
@@ -26,6 +27,10 @@ export function apply(ctx: any) {
     })
     attachSettings(scope)
   })
+  // 页面级特效（无 React 组件）：火焰 / 输入抖动 / 音频解锁，各自独立，经 ctx.effect 挂载并自动清理
+  ctx.effect(attachFlame)
+  ctx.effect(attachInputShake)
+  ctx.effect(attachAudioPrime)
   if (typeof EventSource !== 'undefined') {
     ctx.effect(() => {
       const es = new EventSource('/api/vibe-events')

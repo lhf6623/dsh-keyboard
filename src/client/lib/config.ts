@@ -1,7 +1,12 @@
 export type ShakeLevel = 'off' | 'light' | 'medium' | 'strong'
+export type MoleFrequency = 'low' | 'medium' | 'high'
 
 export interface VibeConfig {
   enabled: boolean
+  opacity: number
+  scale: number
+  mole: boolean
+  moleFrequency: MoleFrequency
   feedback: boolean
   flame: boolean
   shake: ShakeLevel
@@ -9,14 +14,13 @@ export interface VibeConfig {
   pageShake: boolean
   pageShakeLevel: ShakeLevel
   sound: boolean
-  opacity: number
-  scale: number
 }
 
 export const DEFAULTS: VibeConfig = {
-  enabled: true, feedback: true, flame: true, shake: 'off',
+  enabled: true, opacity: 0.5, scale: 1,
+  mole: false, moleFrequency: 'medium',
+  feedback: true, flame: true, shake: 'off',
   response: true, pageShake: true, pageShakeLevel: 'off', sound: true,
-  opacity: 0.5, scale: 1,
 } 
 
 // 持久化键：localStorage（浏览器本地，发布后依然有效）。
@@ -31,8 +35,13 @@ function clamp(v: unknown, min: number, max: number, def: number): number {
 export function normalizeConfig(c: unknown): VibeConfig {
   const o = (c ?? {}) as any
   const level = (v: unknown): ShakeLevel => v === 'light' || v === 'medium' || v === 'strong' ? v : 'off'
+  const freq = (v: unknown): MoleFrequency => v === 'low' || v === 'high' ? v : 'medium'
   return {
     enabled: o.enabled !== false,
+    opacity: clamp(o.opacity, 0.1, 1, 0.5),
+    scale: clamp(o.scale, 0.6, 1.5, 1),
+    mole: o.mole === true,
+    moleFrequency: freq(o.moleFrequency),
     feedback: o.feedback !== false,
     flame: o.flame !== false,
     shake: level(o.shake),
@@ -40,8 +49,6 @@ export function normalizeConfig(c: unknown): VibeConfig {
     pageShake: o.pageShake !== false,
     pageShakeLevel: level(o.pageShakeLevel),
     sound: o.sound !== false,
-    opacity: clamp(o.opacity, 0.1, 1, 0.5),
-    scale: clamp(o.scale, 0.6, 1.5, 1),
   }
 }
 

@@ -41,6 +41,8 @@ dsh plugin add github:lhf6623/dsh-vibe
     enabled: true        # 键盘外观组总开关
     opacity: 0.5         # 键盘透明度
     scale: 1             # 键盘缩放
+    mole: false          # 打地鼠（随机按键冒 emoji）
+    moleFrequency: medium# 冒头频率（low / medium / high）
     feedback: true       # 打字反馈组总开关
     flame: true          # 打字火焰
     shake: off           # 输入抖动（off / light / medium / strong）
