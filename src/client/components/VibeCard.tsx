@@ -1,29 +1,12 @@
+import { Fragment } from "react";
 import type { ReactNode } from "react";
-import {
-  setConfig,
-  VibeConfig,
-  ShakeLevel,
-  MoleFrequency,
-} from "@/client/lib/config";
+import { clsx } from "clsx";
+import { setConfig, VibeConfig } from "@/client/lib/config";
 import { useConfig } from "@/client/hooks/useConfig";
-
-const SHAKE_LABELS: Record<ShakeLevel, string> = {
-  off: "关",
-  light: "轻",
-  medium: "中",
-  strong: "强",
-};
-const SHAKE_LEVELS: ShakeLevel[] = ["off", "light", "medium", "strong"];
-const MOLE_LABELS: Record<MoleFrequency, string> = {
-  off: "关",
-  low: "低",
-  medium: "中",
-  high: "高",
-};
-const MOLE_FREQUENCIES: MoleFrequency[] = ["off", "low", "medium", "high"];
+import { useLocale } from "@/client/lib/i18n";
 
 // —— 系统设置面板行模板（对齐 DSH 通用设置）——
-const ROW = [
+const ROW = clsx(
   "vibe-flex",
   "vibe-items-center",
   "vibe-gap-2",
@@ -32,43 +15,141 @@ const ROW = [
   "vibe-border-b",
   "vibe-border-solid",
   "vibe-border-[var(--dsw-alias-border-l2)]",
-].join(" ");
-const ROW_LAST = ROW + " vibe-border-b-0";
+);
+const ROW_LAST = clsx(ROW, "vibe-border-b-0");
 // 主开关标题行：加粗标题 + 左右对称，无底边框（关闭时不留残线；非首组加顶部边框分隔）
 const HEAD_ROW =
   "vibe-flex vibe-items-center vibe-justify-between vibe-gap-2 vibe-py-4";
-const HEAD_ROW_DIV =
-  HEAD_ROW +
-  " vibe-border-0 vibe-border-t vibe-border-solid vibe-border-[var(--dsw-alias-border-l2)] vibe-mt-3";
+const HEAD_ROW_DIV = clsx(
+  HEAD_ROW,
+  "vibe-border-0",
+  "vibe-border-t",
+  "vibe-border-solid",
+  "vibe-border-[var(--dsw-alias-border-l2)]",
+  "vibe-mt-3",
+);
 // 子项行：左缩进形成层级
-const INDENT = " vibe-pl-6";
+const INDENT = clsx("vibe-pl-6");
 const ROW_TEXT = "vibe-flex vibe-flex-col vibe-flex-1 vibe-gap-1 vibe-min-w-0";
 const TITLE =
   "vibe-text-[14px] vibe-leading-[22px] vibe-text-[var(--dsw-alias-label-primary)]";
 const DESC =
   "vibe-text-[12px] vibe-leading-[18px] vibe-text-[var(--dsw-alias-label-tertiary)]";
 // 主开关行标题：加粗，与子项区分
-const HEAD_TITLE = TITLE + " vibe-font-semibold";
+const HEAD_TITLE = clsx(TITLE, "vibe-font-semibold");
 const CHECKBOX =
   "vibe-accent-[var(--dsw-alias-brand-primary)] vibe-w-[15px] vibe-h-[15px]";
 const RANGE = "vibe-accent-[var(--dsw-alias-brand-primary)] vibe-w-[140px]";
 const VALUE =
   "vibe-text-[12px] vibe-text-[var(--dsw-alias-label-tertiary)] vibe-tabular-nums vibe-min-w-10 vibe-text-right";
-const PILL = [
+const SELECT = clsx(
   "vibe-box-border",
+  "vibe-h-[30px]",
+  "vibe-rounded-md",
   "vibe-border",
   "vibe-border-solid",
-  "vibe-rounded-[16px]",
-  "vibe-px-[14px]",
-  "vibe-py-[6px]",
+  "vibe-border-[rgba(0,0,0,0.25)]",
+  "vibe-bg-transparent",
+  "vibe-px-2",
   "vibe-text-[13px]",
-  "vibe-cursor-pointer",
-  "vibe-transition-[background-color,border-color]",
-].join(" ");
-const PILL_ON =
-  "vibe-bg-[var(--dsw-alias-bg-module-platform)] vibe-border-[var(--dsw-static-neutral-bluish-400)] vibe-text-[var(--dsw-alias-label-primary)]";
-const PILL_OFF =
-  "vibe-bg-transparent vibe-border-[var(--dsw-alias-border-l2)] vibe-text-[var(--dsw-alias-label-secondary)]";
+  "vibe-text-[var(--dsw-alias-label-primary)]",
+  "dsh-dark:vibe-border-[rgba(255,255,255,0.2)]",
+);
+
+// —— 数据驱动：每项配置描述一个字段类型，渲染器按类型出控件；文案用 i18n key ——
+type FieldType = "checkbox" | "range" | "select";
+
+interface FieldDef {
+  key: keyof VibeConfig;
+  titleKey: string;
+  descKey?: string;
+  type: FieldType;
+  // range
+  min?: number;
+  max?: number;
+  step?: number;
+  suffix?: string;
+  // select
+  options?: { value: string; labelKey: string }[];
+  last?: boolean;
+}
+
+interface GroupDef {
+  master: keyof VibeConfig;
+  titleKey: string;
+  fields: FieldDef[];
+}
+
+const SHAKE_OPTION_KEYS = [
+  { value: "off", labelKey: "option.off" },
+  { value: "light", labelKey: "option.light" },
+  { value: "medium", labelKey: "option.medium" },
+  { value: "strong", labelKey: "option.strong" },
+];
+const MOLE_OPTION_KEYS = [
+  { value: "off", labelKey: "option.off" },
+  { value: "low", labelKey: "option.low" },
+  { value: "medium", labelKey: "option.medium" },
+  { value: "high", labelKey: "option.high" },
+];
+
+const GROUPS: GroupDef[] = [
+  {
+    master: "enabled",
+    titleKey: "group.appearance",
+    fields: [
+      {
+        key: "opacity",
+        titleKey: "keyboard.opacity.label",
+        type: "range",
+        min: 0.1,
+        max: 1,
+        step: 0.05,
+        suffix: "%",
+      },
+      {
+        key: "moleFrequency",
+        titleKey: "mole.frequency.label",
+        descKey: "mole.frequency.desc",
+        type: "select",
+        options: MOLE_OPTION_KEYS,
+        last: true,
+      },
+    ],
+  },
+  {
+    master: "feedback",
+    titleKey: "group.typing",
+    fields: [
+      { key: "flame", titleKey: "feedback.flame.label", type: "checkbox" },
+      {
+        key: "shake",
+        titleKey: "feedback.shake.label",
+        type: "select",
+        options: SHAKE_OPTION_KEYS,
+        last: true,
+      },
+    ],
+  },
+  {
+    master: "response",
+    titleKey: "group.response",
+    fields: [
+      {
+        key: "pageShakeLevel",
+        titleKey: "response.pageShake.label",
+        type: "select",
+        options: SHAKE_OPTION_KEYS,
+      },
+      {
+        key: "sound",
+        titleKey: "response.sound.label",
+        type: "checkbox",
+        last: true,
+      },
+    ],
+  },
+];
 
 function Row(props: {
   title: string;
@@ -79,7 +160,7 @@ function Row(props: {
 }) {
   return (
     <div
-      className={(props.last ? ROW_LAST : ROW) + (props.indent ? INDENT : "")}
+      className={clsx(props.last ? ROW_LAST : ROW, props.indent && INDENT)}
     >
       <div className={ROW_TEXT}>
         <div className={TITLE}>{props.title}</div>
@@ -90,161 +171,102 @@ function Row(props: {
   );
 }
 
-/** 独立「氛围」设置标签（settings.section）：每组 = 标题行 + 主开关 + 条件子项。 */
+function FieldControl(props: {
+  field: FieldDef;
+  value: VibeConfig[keyof VibeConfig];
+  onChange: (value: string | number | boolean) => void;
+}) {
+  const { field, value, onChange } = props;
+  const { t } = useLocale();
+  if (field.type === "checkbox") {
+    return (
+      <input
+        className={CHECKBOX}
+        type="checkbox"
+        checked={Boolean(value)}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+    );
+  }
+  if (field.type === "range") {
+    return (
+      <>
+        <input
+          className={RANGE}
+          type="range"
+          min={field.min}
+          max={field.max}
+          step={field.step}
+          value={Number(value)}
+          onChange={(e) => onChange(parseFloat(e.target.value))}
+        />
+        <span className={VALUE}>
+          {Math.round(Number(value) * 100)}
+          {field.suffix}
+        </span>
+      </>
+    );
+  }
+  return (
+    <select
+      className={SELECT}
+      value={String(value)}
+      onChange={(e) => onChange(e.target.value)}
+    >
+      {(field.options ?? []).map((o) => (
+        <option key={o.value} value={o.value}>
+          {t(o.labelKey)}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+/** 独立「氛围」设置标签（settings.section）：按 GROUPS 数据渲染，文案随 DSH 语言自动切换。 */
 export function VibeCard() {
   const cfg = useConfig();
+  const { t } = useLocale();
   const update = (patch: Partial<VibeConfig>) => setConfig(patch);
+  const setField = (key: keyof VibeConfig, value: string | number | boolean) =>
+    update({ [key]: value } as Partial<VibeConfig>);
 
   return (
     <div className="vibe-flex vibe-flex-col">
-      {/* 键盘外观：主开关 = 显示键盘 */}
-      <div className={HEAD_ROW}>
-        <div className={HEAD_TITLE}>键盘外观</div>
-        <input
-          className={CHECKBOX}
-          type="checkbox"
-          checked={cfg.enabled}
-          onChange={(e) => update({ enabled: e.target.checked })}
-        />
-      </div>
-      {cfg.enabled && (
-        <>
-          <Row title="键盘透明度" indent>
-            <input
-              className={RANGE}
-              type="range"
-              min="0.1"
-              max="1"
-              step="0.05"
-              value={cfg.opacity}
-              onChange={(e) => update({ opacity: parseFloat(e.target.value) })}
-            />
-            <span className={VALUE}>{Math.round(cfg.opacity * 100)}%</span>
-          </Row>
-          <Row
-            title="翻出频率"
-            desc="空闲自动翻出节奏；「关」=不自动翻，按键翻出并自动翻回"
-            indent
-          >
-            <div className="vibe-inline-flex vibe-gap-1.5">
-              {MOLE_FREQUENCIES.map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  className={
-                    PILL + " " + (cfg.moleFrequency === f ? PILL_ON : PILL_OFF)
-                  }
-                  onClick={() => update({ moleFrequency: f })}
-                >
-                  {MOLE_LABELS[f]}
-                </button>
-              ))}
+      {GROUPS.map((group, gi) => {
+        const masterOn = Boolean(cfg[group.master]);
+        return (
+          <Fragment key={group.titleKey}>
+            <div className={gi === 0 ? HEAD_ROW : HEAD_ROW_DIV}>
+              <div className={HEAD_TITLE}>{t(group.titleKey)}</div>
+              <input
+                className={CHECKBOX}
+                type="checkbox"
+                checked={masterOn}
+                onChange={(e) => setField(group.master, e.target.checked)}
+              />
             </div>
-          </Row>
-          <Row title="同时显示数量" desc="屏幕上同时显示动物的上限" last indent>
-            <input
-              className={RANGE}
-              type="range"
-              min="1"
-              max="10"
-              step="1"
-              value={cfg.molePoolSize}
-              onChange={(e) =>
-                update({ molePoolSize: parseInt(e.target.value, 10) })
-              }
-            />
-            <span className={VALUE}>{cfg.molePoolSize}只</span>
-          </Row>
-        </>
-      )}
-
-      {/* 打字反馈：主开关 = 组总开关，子项 = 火焰 + 输入抖动 */}
-      <div className={HEAD_ROW_DIV}>
-        <div className={HEAD_TITLE}>打字反馈</div>
-        <input
-          className={CHECKBOX}
-          type="checkbox"
-          checked={cfg.feedback}
-          onChange={(e) => update({ feedback: e.target.checked })}
-        />
-      </div>
-      {cfg.feedback && (
-        <>
-          <Row title="打字火焰" indent>
-            <input
-              className={CHECKBOX}
-              type="checkbox"
-              checked={cfg.flame}
-              onChange={(e) => update({ flame: e.target.checked })}
-            />
-          </Row>
-          <Row title="输入抖动" last indent>
-            <div className="vibe-inline-flex vibe-gap-1.5">
-              {SHAKE_LEVELS.map((level) => (
-                <button
-                  key={level}
-                  type="button"
-                  className={
-                    PILL + " " + (cfg.shake === level ? PILL_ON : PILL_OFF)
-                  }
-                  onClick={() => update({ shake: level })}
-                >
-                  {SHAKE_LABELS[level]}
-                </button>
-              ))}
-            </div>
-          </Row>
-        </>
-      )}
-
-      {/* 回答反馈：主开关 = 组总开关，子项 = 整页抖动 + 提示音 */}
-      <div className={HEAD_ROW_DIV}>
-        <div className={HEAD_TITLE}>回答反馈</div>
-        <input
-          className={CHECKBOX}
-          type="checkbox"
-          checked={cfg.response}
-          onChange={(e) => update({ response: e.target.checked })}
-        />
-      </div>
-      {cfg.response && (
-        <>
-          <Row title="回答后整页抖动" indent>
-            <input
-              className={CHECKBOX}
-              type="checkbox"
-              checked={cfg.pageShake}
-              onChange={(e) => update({ pageShake: e.target.checked })}
-            />
-          </Row>
-          <Row title="整页抖动强度" indent>
-            <div className="vibe-inline-flex vibe-gap-1.5">
-              {SHAKE_LEVELS.map((level) => (
-                <button
-                  key={level}
-                  type="button"
-                  className={
-                    PILL +
-                    " " +
-                    (cfg.pageShakeLevel === level ? PILL_ON : PILL_OFF)
-                  }
-                  onClick={() => update({ pageShakeLevel: level })}
-                >
-                  {SHAKE_LABELS[level]}
-                </button>
-              ))}
-            </div>
-          </Row>
-          <Row title="回答提示音" last indent>
-            <input
-              className={CHECKBOX}
-              type="checkbox"
-              checked={cfg.sound}
-              onChange={(e) => update({ sound: e.target.checked })}
-            />
-          </Row>
-        </>
-      )}
+            {masterOn && (
+              <>
+                {group.fields.map((field) => (
+                  <Row
+                    key={field.key as string}
+                    title={t(field.titleKey)}
+                    desc={field.descKey ? t(field.descKey) : undefined}
+                    last={field.last}
+                    indent
+                  >
+                    <FieldControl
+                      field={field}
+                      value={cfg[field.key]}
+                      onChange={(v) => setField(field.key, v)}
+                    />
+                  </Row>
+                ))}
+              </>
+            )}
+          </Fragment>
+        );
+      })}
     </div>
   );
 }

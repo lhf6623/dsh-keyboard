@@ -51,6 +51,9 @@ const CODES = new Set(
 /** off 模式下排空游标的周期：池非空时每该时长移除最老一只（沿用 Key 的 600ms 翻面动画）。 */
 const OFF_PRESS_RETURN_MS = 1500;
 
+/** 同时显示数量上限（写死）：池满时新动物顶掉最老的一只。 */
+const MOLE_POOL_SIZE = 10;
+
 /** 自动翻出频率对应的基础间隔（毫秒）——仅用作非 off 自动翻调度延迟（动物驻留，靠池满淘汰）。 */
 function freqBaseMs(freq: MoleFrequency): number {
   return freq === "low" ? 9000 : freq === "high" ? 3000 : 5500;
@@ -69,14 +72,14 @@ interface PoolItem {
 /**
  * 键盘小动物显示管理（code -> animal）：统一动物池，池满才淘汰最老（FIFO）。
  * - 非 off（自动翻）：动物入池后驻留，按 moleFrequency 间隔持续翻出随机键动物
- *   （避开池中已有键），池满顶掉最老——池子填满 molePoolSize 后保持满。
+ *   （避开池中已有键），池满顶掉最老——池子填满 MOLE_POOL_SIZE(10) 后保持满。
  * - off（翻出频率=关）：空闲不自动翻；按键翻出的动物由排空游标移除——
  *   池非空时每 OFF_PRESS_RETURN_MS 走一只最老的，「按下即翻、到点自动翻回」。
  * - 按下按键：即刻在按下的键上翻出；已在池中的键移到队尾（保持新鲜不被顶掉，
  *   也延后游标排空）。非 off 且未减弱动态时，按下会加速一次自动翻并重启自动计时。
  * - 切模式不清池：切到 off 时游标开始按周期排空驻留动物；切离 off 时游标停，
  *   剩余动物转驻留（池满才被顶掉）。
- * - 池满（molePoolSize）：新动物顶掉最老的一只。
+ * - 池满（MOLE_POOL_SIZE）：新动物顶掉最老的一只。
  * 按下检测订阅键盘事件源（events/keyboard.ts），与其它按键消费者互不知晓。
  */
 export function useKeyAnimals(): Record<string, string> {
@@ -98,10 +101,10 @@ export function useKeyAnimals(): Record<string, string> {
   }, [draining]);
 
   useEffect(() => {
-    // 池子调小立即生效：只保留最新几只
+    // 池子超出上限：只保留最新几只
     setPool((prev) =>
-      prev.length > cfg.molePoolSize
-        ? prev.slice(prev.length - cfg.molePoolSize)
+      prev.length > MOLE_POOL_SIZE
+        ? prev.slice(prev.length - MOLE_POOL_SIZE)
         : prev,
     );
 
@@ -117,7 +120,7 @@ export function useKeyAnimals(): Record<string, string> {
           const candidates = [...CODES].filter((c) => !taken.has(c));
           const code =
             candidates[Math.floor(Math.random() * candidates.length)];
-          const next = prev.length >= cfg.molePoolSize ? prev.slice(1) : prev;
+          const next = prev.length >= MOLE_POOL_SIZE ? prev.slice(1) : prev;
           return [...next, { code, animal: pick() }];
         });
         schedule();
@@ -134,7 +137,7 @@ export function useKeyAnimals(): Record<string, string> {
           next.push(item);
           return next;
         }
-        const next = prev.length >= cfg.molePoolSize ? prev.slice(1) : prev;
+        const next = prev.length >= MOLE_POOL_SIZE ? prev.slice(1) : prev;
         return [...next, { code, animal: pick() }];
       });
     }
@@ -157,7 +160,7 @@ export function useKeyAnimals(): Record<string, string> {
       offKey();
       if (timer) window.clearTimeout(timer);
     };
-  }, [cfg.moleFrequency, cfg.molePoolSize]);
+  }, [cfg.moleFrequency]);
 
   return Object.fromEntries(pool.map((p) => [p.code, p.animal]));
 }

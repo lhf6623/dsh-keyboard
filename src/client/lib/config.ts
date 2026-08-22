@@ -7,21 +7,19 @@ export interface VibeConfig {
   enabled: boolean
   opacity: number
   moleFrequency: MoleFrequency
-  molePoolSize: number
   feedback: boolean
   flame: boolean
   shake: ShakeLevel
   response: boolean
-  pageShake: boolean
   pageShakeLevel: ShakeLevel
   sound: boolean
 }
 
 export const DEFAULTS: VibeConfig = {
   enabled: true, opacity: 0.5,
-  moleFrequency: 'medium', molePoolSize: 6,
+  moleFrequency: 'medium',
   feedback: true, flame: true, shake: 'off',
-  response: true, pageShake: true, pageShakeLevel: 'off', sound: true,
+  response: true, pageShakeLevel: 'off', sound: true,
 } 
 
 // 持久化键：localStorage（浏览器本地，发布后依然有效）。
@@ -41,12 +39,10 @@ export function normalizeConfig(c: unknown): VibeConfig {
     enabled: o.enabled !== false,
     opacity: clamp(o.opacity, 0.1, 1, 0.5),
     moleFrequency: freq(o.moleFrequency),
-    molePoolSize: Math.round(clamp(o.molePoolSize, 1, 10, 6)),
     feedback: o.feedback !== false,
     flame: o.flame !== false,
     shake: level(o.shake),
     response: o.response !== false,
-    pageShake: o.pageShake !== false,
     pageShakeLevel: level(o.pageShakeLevel),
     sound: o.sound !== false,
   }

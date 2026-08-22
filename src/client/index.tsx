@@ -4,11 +4,13 @@ import { playAnswerSound, attachAudioPrime } from "./lib/fx/audio";
 import { shakePage, attachInputShake } from "./lib/fx/shake";
 import { attachFlame } from "./lib/fx/flame";
 import { attachSettings, normalizeConfig } from "./lib/config";
+import { installI18n, t } from "./lib/i18n";
 import { pluginName } from "@/shared/identity";
 
-export const inject = ["slots", "connection", "remote", "settingsScope"];
+export const inject = ["slots", "connection", "remote", "settingsScope", "locale"];
 
 export function apply(ctx: any) {
+  installI18n(ctx.locale);
   ctx.slots.inject("shell.overlay", () =>
     ctx.slots.register({ name: "shell.overlay", id: pluginName() }, Overlay),
   );
@@ -16,7 +18,7 @@ export function apply(ctx: any) {
   // 与系统设置面板同级的单独配置页。
   ctx.slots.inject("settings.section", () =>
     ctx.slots.register(
-      { name: "settings.section", id: "vibe", order: 5, label: () => "氛围" },
+      { name: "settings.section", id: "vibe", order: 5, label: () => t("section") },
       VibeCard,
     ),
   );

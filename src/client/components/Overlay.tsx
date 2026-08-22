@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { clsx } from "clsx";
 import { useConfig } from "@/client/hooks/useConfig";
 import { useMouseState } from "@/client/hooks/useMouseState";
 import { useComposerPosition } from "@/client/hooks/useComposerPosition";
@@ -15,14 +16,16 @@ export function Overlay() {
 
   const rootStyle: CSSProperties = { bottom: bottom + "px" };
   if (left !== null) rootStyle.left = left + "px";
-  if (!cfg.enabled) rootStyle.display = "none";
   rootStyle.opacity = cfg.opacity;
-  rootStyle.transform = "translateX(-50%)";
 
   const keyboard =
     left !== null ? (
       <div
-        className="vibe-fixed vibe-z-40 vibe-pointer-events-none vibe-origin-[50%_100%] vibe-transition-[left,bottom] vibe-duration-300 [@media(max-width:920px)]:vibe-hidden motion-reduce:vibe-transition-none"
+        className={clsx(
+          "vibe-fixed vibe-z-40 vibe-pointer-events-none vibe-origin-[50%_100%] vibe-transition-[left,bottom] vibe-duration-300 [@media(max-width:920px)]:vibe-hidden motion-reduce:vibe-transition-none",
+          "vibe-translate-x--1/2",
+          !cfg.enabled && "vibe-hidden",
+        )}
         style={rootStyle}
       >
         <div className="vibe-flex vibe-items-stretch vibe-gap-[3px]">

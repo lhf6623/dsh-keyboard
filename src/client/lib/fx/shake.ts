@@ -30,8 +30,8 @@ function triggerShake(card: Element | null): void {
 
 export function shakePage(): void {
   const cfg = getConfig()
-  // 回答反馈组总开关 + 独立开关 + 独立强度档位
-  if (cfg.response === false || cfg.pageShake === false || cfg.pageShakeLevel === 'off' || reducedMotion()) return
+  // 回答反馈组总开关 + 整页抖动强度（含 off）档位
+  if (cfg.response === false || cfg.pageShakeLevel === 'off' || reducedMotion()) return
   const level = cfg.pageShakeLevel
   const target = document.body
   if (!target || typeof (target as any).animate !== 'function') return

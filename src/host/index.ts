@@ -28,12 +28,10 @@ export interface Config {
   enabled: boolean;
   opacity: number;
   moleFrequency: MoleFrequency;
-  molePoolSize: number;
   feedback: boolean;
   flame: boolean;
   shake: ShakeLevel;
   response: boolean;
-  pageShake: boolean;
   pageShakeLevel: ShakeLevel;
   sound: boolean;
 }
@@ -42,15 +40,12 @@ export const Config: z<Config> = z.object({
   enabled: z.boolean().default(true),
   opacity: z.number().min(0.1).max(1).default(0.5),
   moleFrequency: z.union([...MOLE_FREQUENCIES]).default("medium"),
-  // 动物池大小：自动翻与按下翻共用，池满时新动物顶掉最老的一只
-  molePoolSize: z.number().min(1).max(10).default(6),
   // 组总开关：打字反馈（火焰 + 输入抖动）、回答反馈（整页抖动 + 提示音）
   feedback: z.boolean().default(true),
   flame: z.boolean().default(true),
   shake: z.union([...SHAKE_LEVELS]).default("off"),
   response: z.boolean().default(true),
-  pageShake: z.boolean().default(true),
-  // 回答后整页抖动的独立强度档位（不跟随输入抖动）
+  // 回答后整页抖动强度（含 off=关闭，不跟随输入抖动）
   pageShakeLevel: z.union([...SHAKE_LEVELS]).default("off"),
   sound: z.boolean().default(true),
 });

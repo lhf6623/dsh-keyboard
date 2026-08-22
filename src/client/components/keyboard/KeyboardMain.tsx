@@ -8,7 +8,7 @@ export function KeyboardMain(props: { animals: Record<string, string> }) {
         <div className="vibe-flex vibe-gap-[5px]" key={row[0][0]}>
           {row.map((k, i) => {
             if (k[0] === "_spacer")
-              return <div key={"spacer-" + i} style={{ width: k[2] + "px" }} />;
+              return <div key={"spacer-" + i} className="vibe-w-[18px]" />;
             return (
               <Key
                 key={k[0]}

@@ -5,6 +5,8 @@ package-lock.json
 .DS_Store
 
 .pnpm-store
+.npm-cache
+
 
 # 测试/临时文件目录（agent 测试产物统一放这里，不提交）
 .dsh/

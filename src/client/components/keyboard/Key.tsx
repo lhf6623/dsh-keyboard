@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { clsx } from "clsx";
 
 // —— 键帽：单一静态外观（按键反馈由动物翻面表达）——
-const KEY_BASE = [
+const KEY_BASE = clsx(
   "vibe-flex vibe-items-center vibe-justify-center vibe-h-[30px] vibe-box-border vibe-rounded-md vibe-border vibe-border-solid vibe-text-[10px] vibe-font-mono",
   "vibe-border-[rgba(0,0,0,0.2)]",
   "vibe-bg-[rgba(255,255,255,0.25)]",
@@ -11,7 +12,7 @@ const KEY_BASE = [
   "dsh-dark:vibe-bg-[rgba(255,255,255,0.07)]",
   "dsh-dark:vibe-text-[rgba(255,255,255,0.72)]",
   "dsh-dark:vibe-shadow-[0_1px_0_rgba(0,0,0,0.35)]",
-].join(" ");
+);
 
 export function Key(props: { label: string; w: number; animal?: string }) {
   const flipRef = useRef<HTMLDivElement | null>(null);
@@ -47,36 +48,32 @@ export function Key(props: { label: string; w: number; animal?: string }) {
 
   return (
     <div
-      className={KEY_BASE + " vibe-relative"}
+      className={clsx(KEY_BASE, "vibe-relative", "vibe-perspective-260")}
       style={{
         width: Math.round(props.w * 30 + (props.w - 1) * 5) + "px",
-        perspective: 260,
       }}
     >
       {/* 键帽不动，内部内容层翻面；transition 驱动出现/离开的翻面动画 */}
       <div
         ref={flipRef}
-        className="vibe-absolute vibe-inset-0"
-        style={{
-          transformStyle: "preserve-3d",
-          transition: "transform 600ms ease-in-out",
-          transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
-        }}
+        className={clsx(
+          "vibe-absolute vibe-inset-0 vibe-preserve-3d vibe-transition-transform vibe-duration-600 vibe-ease-in-out",
+          flipped ? "vibe-rotate-y-180" : "vibe-rotate-y-0",
+        )}
       >
         <div
-          className="vibe-absolute vibe-inset-0 vibe-flex vibe-items-center vibe-justify-center"
-          style={{ backfaceVisibility: "hidden" }}
+          className={clsx(
+            "vibe-absolute vibe-inset-0 vibe-flex vibe-items-center vibe-justify-center vibe-backface-hidden vibe-translate-z-half",
+            flipped ? "vibe-invisible vibe-vis-delay-hide" : "vibe-visible vibe-vis-delay-show",
+          )}
         >
           {props.label}
         </div>
         <div
-          className="vibe-absolute vibe-inset-0 vibe-flex vibe-items-center vibe-justify-center"
-          style={{
-            backfaceVisibility: "hidden",
-            transform: "rotateY(180deg)",
-            fontSize: 20,
-            lineHeight: 1,
-          }}
+          className={clsx(
+            "vibe-absolute vibe-inset-0 vibe-flex vibe-items-center vibe-justify-center vibe-backface-hidden vibe-rotate-y-180-translate-z-half vibe-text-[20px] vibe-leading-none",
+            flipped ? "vibe-visible vibe-vis-delay-show" : "vibe-invisible vibe-vis-delay-hide",
+          )}
         >
           {shown ?? ""}
         </div>
