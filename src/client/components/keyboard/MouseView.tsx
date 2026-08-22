@@ -38,10 +38,20 @@ export function MouseView(props: { mouse: MouseState }) {
   return (
     <div className={MOUSE_BODY}>
       <div
-        className={clsx(MOUSE_BTN, "vibe-left-0", "vibe-rounded-tl-[28px]", m.left && MOUSE_BTN_ON)}
+        className={clsx(
+          MOUSE_BTN,
+          "vibe-left-0",
+          "vibe-rounded-tl-[28px]",
+          m.left && MOUSE_BTN_ON,
+        )}
       />
       <div
-        className={clsx(MOUSE_BTN, "vibe-right-0", "vibe-rounded-tr-[28px]", m.right && MOUSE_BTN_ON)}
+        className={clsx(
+          MOUSE_BTN,
+          "vibe-right-0",
+          "vibe-rounded-tr-[28px]",
+          m.right && MOUSE_BTN_ON,
+        )}
       />
       <div className={clsx(WHEEL_BASE, wheelTop, wheelBg)} />
     </div>

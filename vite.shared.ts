@@ -92,7 +92,10 @@ async function generateUnoCss(): Promise<string> {
     .map((f) => readFileSync(f, "utf8"))
     .join("\n");
   const extracted = await uno.applyExtractors(source);
-  const { css } = await uno.generate(extracted, { preflights: true, minify: true });
+  const { css } = await uno.generate(extracted, {
+    preflights: true,
+    minify: true,
+  });
   return css;
 }
 

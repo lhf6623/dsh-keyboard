@@ -13,7 +13,10 @@ export default defineConfig({
     ["vibe-rotate-y-0", { transform: "rotateY(0deg)" }],
     ["vibe-rotate-y-180", { transform: "rotateY(180deg)" }],
     ["vibe-translate-z-half", { transform: "translateZ(0.5px)" }],
-    ["vibe-rotate-y-180-translate-z-half", { transform: "rotateY(180deg) translateZ(0.5px)" }],
+    [
+      "vibe-rotate-y-180-translate-z-half",
+      { transform: "rotateY(180deg) translateZ(0.5px)" },
+    ],
     ["vibe-vis-delay-show", { transition: "visibility 0s 0s" }],
     ["vibe-vis-delay-hide", { transition: "visibility 0s 600ms" }],
   ],

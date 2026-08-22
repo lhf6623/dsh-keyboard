@@ -7,7 +7,13 @@ import { attachSettings, normalizeConfig } from "./lib/config";
 import { installI18n, t } from "./lib/i18n";
 import { pluginName } from "@/shared/identity";
 
-export const inject = ["slots", "connection", "remote", "settingsScope", "locale"];
+export const inject = [
+  "slots",
+  "connection",
+  "remote",
+  "settingsScope",
+  "locale",
+];
 
 export function apply(ctx: any) {
   installI18n(ctx.locale);
@@ -18,7 +24,12 @@ export function apply(ctx: any) {
   // 与系统设置面板同级的单独配置页。
   ctx.slots.inject("settings.section", () =>
     ctx.slots.register(
-      { name: "settings.section", id: "vibe", order: 5, label: () => t("section") },
+      {
+        name: "settings.section",
+        id: "vibe",
+        order: 5,
+        label: () => t("section"),
+      },
       VibeCard,
     ),
   );

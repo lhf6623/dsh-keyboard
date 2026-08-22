@@ -64,7 +64,9 @@ export function Key(props: { label: string; w: number; animal?: string }) {
         <div
           className={clsx(
             "vibe-absolute vibe-inset-0 vibe-flex vibe-items-center vibe-justify-center vibe-backface-hidden vibe-translate-z-half",
-            flipped ? "vibe-invisible vibe-vis-delay-hide" : "vibe-visible vibe-vis-delay-show",
+            flipped
+              ? "vibe-invisible vibe-vis-delay-hide"
+              : "vibe-visible vibe-vis-delay-show",
           )}
         >
           {props.label}
@@ -72,7 +74,9 @@ export function Key(props: { label: string; w: number; animal?: string }) {
         <div
           className={clsx(
             "vibe-absolute vibe-inset-0 vibe-flex vibe-items-center vibe-justify-center vibe-backface-hidden vibe-rotate-y-180-translate-z-half vibe-text-[20px] vibe-leading-none",
-            flipped ? "vibe-visible vibe-vis-delay-show" : "vibe-invisible vibe-vis-delay-hide",
+            flipped
+              ? "vibe-visible vibe-vis-delay-show"
+              : "vibe-invisible vibe-vis-delay-hide",
           )}
         >
           {shown ?? ""}

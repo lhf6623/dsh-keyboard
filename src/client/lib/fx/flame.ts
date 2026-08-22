@@ -1,6 +1,6 @@
 import { reducedMotion } from './motion'
 import { getConfig } from '../config'
-import { computeCaretPosition } from '../caret'
+import { computeCaretPosition, disposeCaret } from '../caret'
 import { onComposerInput } from '../events/composer-input'
 
 interface Particle {
@@ -102,5 +102,6 @@ export function attachFlame(): () => void {
     off()
     stopFlame()
     c.remove()
+    disposeCaret()
   }
 }

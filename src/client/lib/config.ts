@@ -1,52 +1,18 @@
 import { configStorageKey } from '@/shared/identity'
+import {
+  DEFAULTS,
+  normalizeConfig,
+  type Config as VibeConfig,
+  type ShakeLevel,
+  type MoleFrequency,
+} from '@/shared/config'
 
-export type ShakeLevel = 'off' | 'light' | 'medium' | 'strong'
-export type MoleFrequency = 'off' | 'low' | 'medium' | 'high'
-
-export interface VibeConfig {
-  enabled: boolean
-  opacity: number
-  moleFrequency: MoleFrequency
-  feedback: boolean
-  flame: boolean
-  shake: ShakeLevel
-  response: boolean
-  pageShakeLevel: ShakeLevel
-  sound: boolean
-}
-
-export const DEFAULTS: VibeConfig = {
-  enabled: true, opacity: 0.5,
-  moleFrequency: 'medium',
-  feedback: true, flame: true, shake: 'off',
-  response: true, pageShakeLevel: 'off', sound: true,
-} 
+export { DEFAULTS, normalizeConfig }
+export type { VibeConfig, ShakeLevel, MoleFrequency }
 
 // 持久化键：localStorage（浏览器本地，发布后依然有效）。
 // 系统 settings（settingsScope）可用时（白名单暴露）优先读系统值并回写，未暴露时 localStorage 是唯一存储。
 const KEY = configStorageKey()
-
-function clamp(v: unknown, min: number, max: number, def: number): number {
-  const n = typeof v === 'number' && !Number.isNaN(v) ? v : def
-  return Math.min(max, Math.max(min, n))
-}
-
-export function normalizeConfig(c: unknown): VibeConfig {
-  const o = (c ?? {}) as any
-  const level = (v: unknown): ShakeLevel => v === 'light' || v === 'medium' || v === 'strong' ? v : 'off'
-  const freq = (v: unknown): MoleFrequency => v === 'off' || v === 'low' || v === 'high' ? v : 'medium'
-  return {
-    enabled: o.enabled !== false,
-    opacity: clamp(o.opacity, 0.1, 1, 0.5),
-    moleFrequency: freq(o.moleFrequency),
-    feedback: o.feedback !== false,
-    flame: o.flame !== false,
-    shake: level(o.shake),
-    response: o.response !== false,
-    pageShakeLevel: level(o.pageShakeLevel),
-    sound: o.sound !== false,
-  }
-}
 
 function loadLocal(): VibeConfig {
   try {

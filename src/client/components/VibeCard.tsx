@@ -159,9 +159,7 @@ function Row(props: {
   children: ReactNode;
 }) {
   return (
-    <div
-      className={clsx(props.last ? ROW_LAST : ROW, props.indent && INDENT)}
-    >
+    <div className={clsx(props.last ? ROW_LAST : ROW, props.indent && INDENT)}>
       <div className={ROW_TEXT}>
         <div className={TITLE}>{props.title}</div>
         {props.desc ? <div className={DESC}>{props.desc}</div> : null}

@@ -92,3 +92,38 @@ export const ROWS: KeyDef[][] = [
     ["ControlRight", "Ctrl", 1.5],
   ],
 ];
+
+// —— 自适应布局宽度常量（派生自 ROWS，单一真源，避免硬编码）——
+// 键帽总宽公式与 Key.tsx 保持一致：keyWidthPx(w) = round(w*30 + (w-1)*5)。
+// 行内水平间距固定 5px（KeyboardMain 行容器 vibe-gap-[5px]）；spacer 为 18px 固定占位。
+
+export const KEY_UNIT = 30;
+export const KEY_GAP = 5;
+export const SPACER_WIDTH = 18;
+
+/** 单个键帽渲染宽度（像素）：与 Key.tsx 的 `Math.round(w*30 + (w-1)*5)` 一致。 */
+export function keyWidthPx(w: number): number {
+  return Math.round(w * KEY_UNIT + (w - 1) * KEY_GAP);
+}
+
+/** 一行键盘的像素总宽：键帽宽度和 + 行内间隙（含 spacer 占位）。 */
+export function rowWidthPx(row: KeyDef[]): number {
+  let sum = 0;
+  for (const [code, , w] of row) {
+    sum += code === "_spacer" ? SPACER_WIDTH : keyWidthPx(w);
+  }
+  return sum + (row.length - 1) * KEY_GAP;
+}
+
+/** 键盘本体自然宽度：最宽一行的像素宽度。 */
+export const KEYBOARD_NATURAL_WIDTH = Math.max(...ROWS.map(rowWidthPx));
+
+/** 右侧列（鼠标 + 方向键）宽度：与 Overlay 右侧 col 一致（ArrowView 最宽 100px）。 */
+export const SIDE_COLUMN_WIDTH = 100;
+
+/** 键盘与右侧列之间的水平间距（Overlay 根容器 vibe-gap-[3px]）。 */
+export const SIDE_GAP = 3;
+
+/** 完整布局（键盘 + 右侧列）宽度：composer 达到该宽度才展示右侧列。 */
+export const KEYBOARD_FULL_WIDTH =
+  KEYBOARD_NATURAL_WIDTH + SIDE_GAP + SIDE_COLUMN_WIDTH;

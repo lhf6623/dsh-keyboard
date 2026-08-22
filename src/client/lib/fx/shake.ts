@@ -18,8 +18,8 @@ function keyframes(amp: number): Keyframe[] {
 
 function triggerShake(card: Element | null): void {
   const cfg = getConfig()
-  // 打字反馈组总开关：关闭（feedback=false）时输入抖动也停
-  if (cfg.feedback === false || cfg.flame === false || cfg.shake === 'off' || reducedMotion()) return
+  // 打字反馈组总开关：关闭（feedback=false）时输入抖动也停；档位与 flame 相互独立
+  if (cfg.feedback === false || cfg.shake === 'off' || reducedMotion()) return
   const level = cfg.shake
   if (!card || typeof (card as any).animate !== 'function') return
   const amp = level === 'strong' ? 3 : level === 'medium' ? 2 : 1

@@ -1,40 +1,59 @@
 import { useEffect, useState } from "react";
 
 /**
- * 输入框上方悬浮层的位置测量：bottom = 距视口底部，left = 内容区水平中心（未测得为 null）。
- * 输入框的位置会随多种情况变化：视口缩放、任意滚动（含内部容器）、内容增长把输入框
- * 往下推（AI 回复后 composer 从垂直居中移到下方）、shell 布局重排（侧边栏切换等）。
- * 这里统一监听所有这些来源，用 rAF 合并高频触发，只有位置实际变化才更新 state。
+ * 输入框上方悬浮层的位置测量：bottom = 距视口底部，left = composer 水平中心。
+ *
+ * 定位锚点直接取 composer 自身的 bounding rect（视觉中心），而非猜 shell 的 grid 列：
+ * getBoundingClientRect() 是布局后的最终真值，天然包含右侧插件面板、滚动条 gutter、
+ * sticky/absolute seat、中列内的子网格等一切 factor。若强依赖 gridTemplateColumns，
+ * 一旦右侧被插件占用（面板收窄中列 / 加额外列）、出现滚动条、或 CSS 过渡进行中读到的是
+ * 目标终值而非当前渲染值，中心就会偏移；解析失败时更会退化为 null 把键盘整体隐藏。
+ *
+ * 用同一个 rect 同时算 left 与 bottom，避免两套测量互相漂移。
+ *
+ * 监听来源：视口缩放、任意滚动（含内部容器，capture 捕获）、ResizeObserver
+ * （composer seat + body + documentElement，覆盖内容增长把输入框往下推），以及
+ * MutationObserver（frame 上 style/class/折叠态、子节点重排）。用 rAF 合并高频触发，
+ * 只有位置实际变化才更新 state。
  */
-export function useComposerPosition(): { bottom: number; left: number | null } {
+export function useComposerPosition(): {
+  bottom: number;
+  left: number;
+  width: number;
+} {
   const [bottom, setBottom] = useState(170);
-  const [left, setLeft] = useState<number | null>(null);
+  const [left, setLeft] = useState<number>(() =>
+    typeof window === "undefined" ? 0 : Math.round(window.innerWidth / 2),
+  );
+  // composer 宽度：驱动 Overlay 的自适应布局（完整 / 仅键盘 / 隐藏）。
+  const [width, setWidth] = useState<number>(() =>
+    typeof window === "undefined" ? 0 : window.innerWidth,
+  );
 
   useEffect(() => {
     function measure() {
-      const overlay = document.querySelector("[data-shell-overlay]");
-      const frame = overlay ? overlay.parentElement : null;
-      if (frame) {
-        const tpl =
-          frame.style.gridTemplateColumns ||
-          getComputedStyle(frame).gridTemplateColumns;
-        const m1 = tpl.match(/^\s*([\d.]+)px/);
-        const m2 = tpl.match(/([\d.]+)px\s*$/);
-        const sidebarW = m1 ? parseFloat(m1[1]) : 0;
-        const detailsW = m2 ? parseFloat(m2[1]) : 0;
-        const l = Math.round(
-          sidebarW + (window.innerWidth - sidebarW - detailsW) / 2,
-        );
-        setLeft((prev) => (prev === l ? prev : l));
-      }
       const el =
         document.querySelector("[data-composer-card]") ||
         document.querySelector("[data-composer-seat]");
       if (el) {
+        // 同一个 rect 同时得出水平中心与底部距离，消除两类测量的漂移。
         const rect = el.getBoundingClientRect();
-        const b = Math.round(window.innerHeight - rect.top + 10);
-        setBottom((prev) => (prev === b ? prev : b));
+        // 锚点必须可测（display:none 等会返回 0 矩形）：此时视作找不到，走下方 fallback。
+        if (rect.width > 0 || rect.height > 0) {
+          const l = Math.round(rect.left + rect.width / 2);
+          const b = Math.round(window.innerHeight - rect.top + 10);
+          const w = Math.round(rect.width);
+          setLeft((prev) => (prev === l ? prev : l));
+          setBottom((prev) => (prev === b ? prev : b));
+          setWidth((prev) => (prev === w ? prev : w));
+          return;
+        }
       }
+      // fallback：找不到锚点（或不可测）时用视口中心，键盘仍显示而非消失。
+      // 宽度同样视作足够宽（显示完整键盘），避免误隐藏。
+      const l = Math.round(window.innerWidth / 2);
+      setLeft((prev) => (prev === l ? prev : l));
+      setWidth((prev) => (prev === window.innerWidth ? prev : window.innerWidth));
     }
     let rafId: number | null = null;
     function scheduleMeasure() {
@@ -86,5 +105,5 @@ export function useComposerPosition(): { bottom: number; left: number | null } {
     };
   }, []);
 
-  return { bottom, left };
+  return { bottom, left, width };
 }
