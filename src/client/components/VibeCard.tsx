@@ -15,11 +15,12 @@ const SHAKE_LABELS: Record<ShakeLevel, string> = {
 };
 const SHAKE_LEVELS: ShakeLevel[] = ["off", "light", "medium", "strong"];
 const MOLE_LABELS: Record<MoleFrequency, string> = {
+  off: "关",
   low: "低",
   medium: "中",
   high: "高",
 };
-const MOLE_FREQUENCIES: MoleFrequency[] = ["low", "medium", "high"];
+const MOLE_FREQUENCIES: MoleFrequency[] = ["off", "low", "medium", "high"];
 
 // —— 系统设置面板行模板（对齐 DSH 通用设置）——
 const ROW = [
@@ -122,7 +123,7 @@ export function VibeCard() {
           </Row>
           <Row
             title="翻出频率"
-            desc="新动物出现的快慢；间隔越短，动物在键上停留越短"
+            desc="空闲自动翻出节奏；「关」=不自动翻，按键翻出并自动翻回"
             indent
           >
             <div className="vibe-inline-flex vibe-gap-1.5">

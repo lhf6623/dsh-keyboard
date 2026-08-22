@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ROWS } from "./layout";
 import { useConfig } from "@/client/hooks/useConfig";
+import type { MoleFrequency } from "@/client/lib/config";
 import { onKeyDown } from "@/client/lib/events/keyboard";
 import { reducedMotion } from "@/client/lib/fx/motion";
 
@@ -47,40 +48,68 @@ const CODES = new Set(
     .concat(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]),
 );
 
+/** off 模式下排空游标的周期：池非空时每该时长移除最老一只（沿用 Key 的 600ms 翻面动画）。 */
+const OFF_PRESS_RETURN_MS = 1500;
+
+/** 自动翻出频率对应的基础间隔（毫秒）——仅用作非 off 自动翻调度延迟（动物驻留，靠池满淘汰）。 */
+function freqBaseMs(freq: MoleFrequency): number {
+  return freq === "low" ? 9000 : freq === "high" ? 3000 : 5500;
+}
+
 function pick(): string {
   return ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
 }
 
+/** 池内单只动物。无时间戳：非 off 驻留到被池满顶掉；off 由游标按入池顺序排空。 */
+interface PoolItem {
+  code: string;
+  animal: string;
+}
+
 /**
- * 键盘小动物显示管理（code -> animal）：统一动物池
- * - 自动翻：按 moleFrequency 间隔持续翻出随机键动物（避开池中已有键）
- * - 按下按键：即刻在按下的键上翻出（加速一次自动翻，并重启自动计时）；
- *   已在池中的键移到队尾（刷新等待时间，不换动物）
- * - 池满（molePoolSize）时：新动物顶掉最老的一只；动物驻留到被顶掉（≈ 池×间隔）
+ * 键盘小动物显示管理（code -> animal）：统一动物池，池满才淘汰最老（FIFO）。
+ * - 非 off（自动翻）：动物入池后驻留，按 moleFrequency 间隔持续翻出随机键动物
+ *   （避开池中已有键），池满顶掉最老——池子填满 molePoolSize 后保持满。
+ * - off（翻出频率=关）：空闲不自动翻；按键翻出的动物由排空游标移除——
+ *   池非空时每 OFF_PRESS_RETURN_MS 走一只最老的，「按下即翻、到点自动翻回」。
+ * - 按下按键：即刻在按下的键上翻出；已在池中的键移到队尾（保持新鲜不被顶掉，
+ *   也延后游标排空）。非 off 且未减弱动态时，按下会加速一次自动翻并重启自动计时。
+ * - 切模式不清池：切到 off 时游标开始按周期排空驻留动物；切离 off 时游标停，
+ *   剩余动物转驻留（池满才被顶掉）。
+ * - 池满（molePoolSize）：新动物顶掉最老的一只。
  * 按下检测订阅键盘事件源（events/keyboard.ts），与其它按键消费者互不知晓。
  */
 export function useKeyAnimals(): Record<string, string> {
   const cfg = useConfig();
-  // 统一动物池：头部最老、尾部最新；自动翻与按下翻共用
-  const [pool, setPool] = useState<
-    Array<{ code: string; animal: string }>
-  >([]);
+  const [pool, setPool] = useState<PoolItem[]>([]);
+
+  // —— off 模式的排空游标 ——
+  // 开关即条件「off && 池非空」：池排空 / 切离 off / 卸载时 cleanup 关闭。
+  // 该条件进 effect 依赖：池「空→非空」翻转时重建 interval 重新计时，
+  // 保证每只动物至少展示一个周期（避免按键恰好落在 tick 前被立即清掉）；
+  // 排空途中池持续非空、依赖不变，interval 不重建，FIFO 节奏不受新按键干扰。
+  const draining = cfg.moleFrequency === "off" && pool.length > 0;
+  useEffect(() => {
+    if (!draining) return;
+    const id = window.setInterval(() => {
+      setPool((prev) => (prev.length > 0 ? prev.slice(1) : prev));
+    }, OFF_PRESS_RETURN_MS);
+    return () => window.clearInterval(id);
+  }, [draining]);
 
   useEffect(() => {
     // 池子调小立即生效：只保留最新几只
-    setPool((p) =>
-      p.length > cfg.molePoolSize ? p.slice(p.length - cfg.molePoolSize) : p,
+    setPool((prev) =>
+      prev.length > cfg.molePoolSize
+        ? prev.slice(prev.length - cfg.molePoolSize)
+        : prev,
     );
 
+    const off = cfg.moleFrequency === "off";
     let timer: number | null = null;
 
     function schedule() {
-      const base =
-        cfg.moleFrequency === "low"
-          ? 9000
-          : cfg.moleFrequency === "high"
-            ? 3000
-            : 5500;
+      const base = freqBaseMs(cfg.moleFrequency);
       const delay = base + (Math.random() - 0.5) * base * 0.6;
       timer = window.setTimeout(() => {
         setPool((prev) => {
@@ -88,7 +117,6 @@ export function useKeyAnimals(): Record<string, string> {
           const candidates = [...CODES].filter((c) => !taken.has(c));
           const code =
             candidates[Math.floor(Math.random() * candidates.length)];
-          // 池满：最老的一只翻回，新动物翻出（同一帧同时发生）
           const next = prev.length >= cfg.molePoolSize ? prev.slice(1) : prev;
           return [...next, { code, animal: pick() }];
         });
@@ -96,32 +124,37 @@ export function useKeyAnimals(): Record<string, string> {
       }, delay);
     }
 
-    const off = onKeyDown((e) => {
-      if (e.repeat) return;
-      const code = e.code;
-      if (!CODES.has(code)) return;
+    function press(code: string) {
       setPool((prev) => {
         const idx = prev.findIndex((p) => p.code === code);
         if (idx >= 0) {
-          // 已在池中：移到队尾（刷新等待时间，不换动物）
+          // 已在池中：移到队尾保持新鲜（不被池满顶掉，也延后游标排空）
           const next = [...prev];
-          next.push(next.splice(idx, 1)[0]);
+          const item = next.splice(idx, 1)[0];
+          next.push(item);
           return next;
         }
         const next = prev.length >= cfg.molePoolSize ? prev.slice(1) : prev;
         return [...next, { code, animal: pick() }];
       });
-      // 按下 = 加速一次自动翻：重启调度计时，下一次自动翻在完整间隔之后
-      if (!reducedMotion()) {
+    }
+
+    const offKey = onKeyDown((e) => {
+      if (e.repeat) return;
+      const code = e.code;
+      if (!CODES.has(code)) return;
+      press(code);
+      // 非 off：按下加速一次自动翻（重启自动计时）。off 下不启动任何自动调度。
+      if (!off && !reducedMotion()) {
         if (timer) window.clearTimeout(timer);
         schedule();
       }
     });
 
-    if (!reducedMotion()) schedule();
+    if (!off && !reducedMotion()) schedule();
 
     return () => {
-      off();
+      offKey();
       if (timer) window.clearTimeout(timer);
     };
   }, [cfg.moleFrequency, cfg.molePoolSize]);

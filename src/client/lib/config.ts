@@ -1,7 +1,7 @@
 import { configStorageKey } from '@/shared/identity'
 
 export type ShakeLevel = 'off' | 'light' | 'medium' | 'strong'
-export type MoleFrequency = 'low' | 'medium' | 'high'
+export type MoleFrequency = 'off' | 'low' | 'medium' | 'high'
 
 export interface VibeConfig {
   enabled: boolean
@@ -36,7 +36,7 @@ function clamp(v: unknown, min: number, max: number, def: number): number {
 export function normalizeConfig(c: unknown): VibeConfig {
   const o = (c ?? {}) as any
   const level = (v: unknown): ShakeLevel => v === 'light' || v === 'medium' || v === 'strong' ? v : 'off'
-  const freq = (v: unknown): MoleFrequency => v === 'low' || v === 'high' ? v : 'medium'
+  const freq = (v: unknown): MoleFrequency => v === 'off' || v === 'low' || v === 'high' ? v : 'medium'
   return {
     enabled: o.enabled !== false,
     opacity: clamp(o.opacity, 0.1, 1, 0.5),

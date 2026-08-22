@@ -13,7 +13,7 @@ export const VIBE_SETTINGS_NAMESPACE = settingsNamespace(pluginName());
 export const SHAKE_LEVELS = ["off", "light", "medium", "strong"] as const;
 export type ShakeLevel = (typeof SHAKE_LEVELS)[number];
 
-export const MOLE_FREQUENCIES = ["low", "medium", "high"] as const;
+export const MOLE_FREQUENCIES = ["off", "low", "medium", "high"] as const;
 export type MoleFrequency = (typeof MOLE_FREQUENCIES)[number];
 
 /**
